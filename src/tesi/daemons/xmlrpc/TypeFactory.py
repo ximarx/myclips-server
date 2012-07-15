@@ -3,8 +3,9 @@ Created on 10/lug/2012
 
 @author: Francesco Capozzo
 '''
+from tesi.daemons.xmlrpc.Service import Service
 
-class TypeFactory(object):
+class TypeFactory(Service):
     '''
     Factory of MyClips types
     '''

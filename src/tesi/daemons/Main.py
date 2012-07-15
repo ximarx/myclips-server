@@ -10,7 +10,7 @@ from tesi.daemons.MyClipsWrapper import MyClipsWrapper
 import thread
 import sys
 from tesi.daemons.xmlrpc.API import API
-
+import tesi.daemons.xmlrpc as xmlrpc
 
 if __name__ == '__main__':
     
@@ -41,7 +41,20 @@ if __name__ == '__main__':
     
     server.register_introspection_functions()
     
-    server.register_instance(API())
+    api = API({
+        "RULES"
+            : xmlrpc.Rules(),
+        "WM"
+            : xmlrpc.WorkingMemory(),
+        "TYPES"
+            : xmlrpc.TypeFactory(),
+        "AUTH"
+            : xmlrpc.SessionsManager()
+    })
+    
+    #api.apis("RULES")
+    
+    server.register_instance(api, True)
     #APIs = API()
     #server.register_instance(APIs.TYPES, allow_dotted_names=True)
     #server.register_instance(APIs.RETE, allow_dotted_names=True)
