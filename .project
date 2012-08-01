@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>tesi-daemons</name>
+	<name>myclips-server</name>
 	<comment></comment>
 	<projects>
-		<project>icse-ie</project>
+		<project>myclips</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
