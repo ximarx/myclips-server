@@ -15,10 +15,10 @@ while True:
         break
     except ImportError:
         if pathIndex > -1:
-            sys.path.pop(0)
+            sys.path.pop()
         pathIndex += 1
         try:
-            sys.path.insert(0, os.path.abspath( THIS_PATH + MYCLIPS_LIB_SRC_PATH[pathIndex] ))
+            sys.path.append(os.path.abspath( THIS_PATH + MYCLIPS_LIB_SRC_PATH[pathIndex] ))
         except:
             print >> sys.stderr, "MyCLIPS not found in:"
             print >> sys.stderr, "    ", os.path.abspath( THIS_PATH )
@@ -30,14 +30,14 @@ while True:
 pathIndex = -1
 while True:
     try:
-        import myclips.xmlrpc
+        import myclips_server.xmlrpc.__main__
         break
     except ImportError:
         if pathIndex > -1:
-            sys.path.pop(0)
+            sys.path.pop()
         pathIndex += 1
         try:
-            sys.path.insert(0, os.path.abspath( THIS_PATH + MYCLIPS_SERVER_SRC_PATHS[pathIndex]))
+            sys.path.append(os.path.abspath( THIS_PATH + MYCLIPS_SERVER_SRC_PATHS[pathIndex]))
         except:
             print >> sys.stderr, "MyCLIPS xmlrpc server not found in:"
             print >> sys.stderr, "    ", os.path.abspath( THIS_PATH )

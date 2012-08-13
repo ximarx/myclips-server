@@ -3,9 +3,10 @@ Created on 13/ago/2012
 
 @author: Francesco Capozzo
 '''
-from myclips-server.xmlrpc.server import MyClipsDocXMLRPCServer
-from myclips-server.xmlrpc.Broker import Broker
-from myclips-server.xmlrpc.services import Services
+
+from myclips_server.xmlrpc.Broker import Broker
+from myclips_server.xmlrpc.services import Services
+from myclips_server.xmlrpc.server import MyClipsDocXMLRPCServer
 
 
 server = MyClipsDocXMLRPCServer(('localhost', 8081), allow_none=True)

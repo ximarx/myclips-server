@@ -4,7 +4,7 @@ Created on 10/lug/2012
 @author: Francesco Capozzo
 '''
 import inspect
-from myclips.daemons.MyClipsWrapper import MyClipsWrapper
+from myclips_server.daemons.MyClipsWrapper import MyClipsWrapper
 
 class Broker(object):
     '''
