@@ -3,12 +3,10 @@ Created on 10/lug/2012
 
 @author: Francesco Capozzo
 '''
-import icse.parser as clipsparser
-from icse.Production import Production
-from tesi.daemons.MyClipsWrapper import MyClipsWrapper
 import inspect
+from myclips.daemons.MyClipsWrapper import MyClipsWrapper
 
-class API(object):
+class Broker(object):
     '''
     MyClips XML-RPC api
     '''
@@ -16,7 +14,7 @@ class API(object):
     def __init__(self, services):
         class fakeobj(object):
             def __init__(self):
-                self.assert_fact = MyClipsWrapper().i().rete.assert_fact
+                self.assertFact = MyClipsWrapper().i().network.assertFact
                 
         self.RETE = fakeobj()
         #setattr(self.RETE, "assert_fact", MyClipsWrapper().i().rete.assert_fact)
@@ -47,20 +45,20 @@ class API(object):
         return [
                 [
                  ".".join([service, func]), #SERVICENAME.func
-                 API._vectorizeArgs(getattr(self._services[service], func))
+                 self.__class__._vectorizeArgs(getattr(self._services[service], func))
                 ] 
                 for func in dir(self._services[service]) if func[0] != '_'
             ]
 
-    def parseProduction(self, defrule):
-        parsedItems = clipsparser.parse(defrule)
-        
-        rule = parsedItems[0][1]
-        default_rule = {'name': '', 'lhs': [], 'rhs': [], 'declare': {'salience': 0}, 'description': ''}
-        default_rule.update(rule)
-        rule = default_rule
-        p = Production(rule['name'], rule['lhs'], rule['rhs'], rule['declare'], rule['description'])
-        MyClipsWrapper.i().rete.add_production(p)
+#    def parseProduction(self, defrule):
+#        parsedItems = clipsparser.parse(defrule)
+#        
+#        rule = parsedItems[0][1]
+#        default_rule = {'name': '', 'lhs': [], 'rhs': [], 'declare': {'salience': 0}, 'description': ''}
+#        default_rule.update(rule)
+#        rule = default_rule
+#        p = Production(rule['name'], rule['lhs'], rule['rhs'], rule['declare'], rule['description'])
+#        MyClipsWrapper.i().rete.add_production(p)
 #        
 #
 #    def assert_fact(self, *args, **kargs):

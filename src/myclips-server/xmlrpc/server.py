@@ -1,20 +1,13 @@
 '''
-Created on 08/lug/2012
+Created on 13/ago/2012
 
 @author: Francesco Capozzo
 '''
-from bottle import run, default_app, response
-import bottle
-from DocXMLRPCServer import DocXMLRPCServer, XMLRPCDocGenerator,\
-    DocXMLRPCRequestHandler, ServerHTMLDoc
-from tesi.daemons.MyClipsWrapper import MyClipsWrapper
-import thread
-import sys
-from tesi.daemons.xmlrpc.API import API
-import tesi.daemons.xmlrpc as xmlrpc
+from DocXMLRPCServer import XMLRPCDocGenerator, ServerHTMLDoc,\
+    DocXMLRPCRequestHandler
 from SimpleXMLRPCServer import SimpleXMLRPCServer, resolve_dotted_attribute
 
-class MyXMLRPCDocGenerator(XMLRPCDocGenerator):
+class MyClipsXMLRPCDocGenerator(XMLRPCDocGenerator):
     
     def recursive_find_methods(self, methodsDict, dotObject, method_prefix=""):
         
@@ -80,8 +73,8 @@ class MyXMLRPCDocGenerator(XMLRPCDocGenerator):
 
         return documenter.page(self.server_title, documentation)    
 
-class MyDocXMLRPCServer(  SimpleXMLRPCServer,
-                        MyXMLRPCDocGenerator):
+class MyClipsDocXMLRPCServer(  SimpleXMLRPCServer,
+                        MyClipsXMLRPCDocGenerator):
     """XML-RPC and HTML documentation server.
 
     Adds the ability to serve server documentation to the capabilities
@@ -93,55 +86,5 @@ class MyDocXMLRPCServer(  SimpleXMLRPCServer,
                  bind_and_activate=True):
         SimpleXMLRPCServer.__init__(self, addr, requestHandler, logRequests,
                                     allow_none, encoding, bind_and_activate)
-        MyXMLRPCDocGenerator.__init__(self)
+        MyClipsXMLRPCDocGenerator.__init__(self)
 
-
-if __name__ == '__main__':
-    
-    #default_app.push()
-    
-    def allow_origin(callback):
-        def wrapper(*args, **kwargs):
-            body = callback(*args, **kwargs)
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return body
-        return wrapper
-    
-    bottle.install(allow_origin)    
-    
-    import tesi.daemons.restful.routes
-    
-    #app = default_app.pop()
-    
-    #run(app, host='localhost', port=8080, debug=True)
-    #run(host='localhost', port=8080, debug=True)
-    try:
-        thread.start_new_thread(run, (), {'port': 8080, 'debug': True})
-    except Exception, e:
-        print >> sys.stderr, "Impossibile avviare bottle: ", e 
-    
-    
-    server = MyDocXMLRPCServer(('localhost', 8081), allow_none=True)
-    
-    server.register_introspection_functions()
-    
-    api = API({
-        "RULES"
-            : xmlrpc.Rules(),
-        "WM"
-            : xmlrpc.WorkingMemory(),
-        "TYPES"
-            : xmlrpc.TypeFactory(),
-        "AUTH"
-            : xmlrpc.SessionsManager()
-    })
-    
-    #api.apis("RULES")
-    
-    server.register_instance(api, True)
-    #APIs = API()
-    #server.register_instance(APIs.TYPES, allow_dotted_names=True)
-    #server.register_instance(APIs.RETE, allow_dotted_names=True)
-    
-    server.serve_forever()
-    

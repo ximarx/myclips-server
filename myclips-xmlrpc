@@ -1,0 +1,48 @@
+#!/usr/bin/python2.7
+
+import sys
+import os
+
+THIS_PATH = os.path.dirname(__file__)
+
+MYCLIPS_SERVER_SRC_PATHS = ['/src/']
+MYCLIPS_LIB_SRC_PATH = ['/../myclips/src/', '/../../myclips/src/']
+
+pathIndex = -1
+while True:
+    try:
+        import myclips
+        break
+    except ImportError:
+        if pathIndex > -1:
+            sys.path.pop(0)
+        pathIndex += 1
+        try:
+            sys.path.insert(0, os.path.abspath( THIS_PATH + MYCLIPS_LIB_SRC_PATH[pathIndex] ))
+        except:
+            print >> sys.stderr, "MyCLIPS not found in:"
+            print >> sys.stderr, "    ", os.path.abspath( THIS_PATH )
+            for p in MYCLIPS_LIB_SRC_PATH:
+                print >> sys.stderr, "    ", os.path.abspath( THIS_PATH +p)
+            exit(-2)
+
+
+pathIndex = -1
+while True:
+    try:
+        import myclips.xmlrpc
+        break
+    except ImportError:
+        if pathIndex > -1:
+            sys.path.pop(0)
+        pathIndex += 1
+        try:
+            sys.path.insert(0, os.path.abspath( THIS_PATH + MYCLIPS_SERVER_SRC_PATHS[pathIndex]))
+        except:
+            print >> sys.stderr, "MyCLIPS xmlrpc server not found in:"
+            print >> sys.stderr, "    ", os.path.abspath( THIS_PATH )
+            for p in MYCLIPS_SERVER_SRC_PATHS:
+                print >> sys.stderr, "    ", os.path.abspath( THIS_PATH + p)
+            exit(-2)
+
+
