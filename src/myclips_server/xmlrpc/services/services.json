@@ -1,0 +1,26 @@
+[
+    {
+        "type": "Rules", 
+        "class": "Rules", 
+        "module": "myclips_server.xmlrpc.services.Rules", 
+        "name": "Rules_Rules"
+    }, 
+    {
+        "type": "TypeFactory", 
+        "class": "TypeFactory", 
+        "module": "myclips_server.xmlrpc.services.TypeFactory", 
+        "name": "TypeFactory_TypeFactory"
+    }, 
+    {
+        "type": "Network", 
+        "class": "Network", 
+        "module": "myclips_server.xmlrpc.services.network.Network", 
+        "name": "Network_MyClips"
+    }, 
+    {
+        "type": "Sessions", 
+        "class": "Sessions", 
+        "module": "myclips_server.xmlrpc.services.sessions.Sessions", 
+        "name": "Sessions_Sessions"
+    }
+]

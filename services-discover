@@ -29,8 +29,8 @@ MYCLIPS_SERVER_SRC_PATHS = ['./src/']
 pathIndex = -1
 while True:
     try:
-        import myclips_server.xmlrpc.main as server
-        server.main()
+        import myclips_server.xmlrpc.services.discover as app
+        app.discover(manifestFile="./src/myclips_server/xmlrpc/services/services.json")
         break
     except ImportError:
         if pathIndex > -1:

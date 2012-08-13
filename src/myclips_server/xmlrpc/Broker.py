@@ -4,29 +4,26 @@ Created on 10/lug/2012
 @author: Francesco Capozzo
 '''
 import inspect
-from myclips_server.daemons.MyClipsWrapper import MyClipsWrapper
 
 class Broker(object):
     '''
-    MyClips XML-RPC api
+    MyClips-Server Service Broker
     '''
 
     def __init__(self, services):
-        class fakeobj(object):
-            def __init__(self):
-                self.assertFact = MyClipsWrapper().i().network.assertFact
-                
-        self.RETE = fakeobj()
-        #setattr(self.RETE, "assert_fact", MyClipsWrapper().i().rete.assert_fact)
-        #self.RETE.assert_fact = MyClipsWrapper().i().rete.assert_fact
+        
+        if isinstance(services, dict):
+            self._services = services
+        elif isinstance(services, list):
+            self._services = {}
+            for service in services:
+                if self._services.has_key(service._TYPE):
+                    self._services[service._NAME] = service
+                else:
+                    self._services[service._TYPE] = service
         
         
-        if not isinstance(services, dict):
-            services = {}
-
-        self._services = services
-        
-        for (sKey, Service) in services.items():
+        for (sKey, Service) in self._services.items():
             setattr(self, sKey, Service)
 
     def services(self):
@@ -41,13 +38,14 @@ class Broker(object):
                             else (arg,) 
                 for (index, arg) in enumerate(args) if (index > 0 or (index == 0 and args[0] != "self"))]
 
-    def apis(self, service):
+    def apis(self, aServiceName):
+        theService = self._services[aServiceName]
         return [
                 [
-                 ".".join([service, func]), #SERVICENAME.func
-                 self.__class__._vectorizeArgs(getattr(self._services[service], func))
+                 ".".join([aServiceName, func]), #SERVICENAME.func
+                 self.__class__._vectorizeArgs(getattr(self._services[aServiceName], func))
                 ] 
-                for func in dir(self._services[service]) if func[0] != '_'
+                for func in dir(theService) if func[0] != '_' and callable(getattr(theService, func))
             ]
 
 #    def parseProduction(self, defrule):

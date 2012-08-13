@@ -53,8 +53,9 @@ def demo():
 
 pp = pprint.pprint
 
+s = gs()
+
 print "type:"
-print "    s = gs()"
 print "    pp(s.services())"
 print "        : get services list"
 print "    pp(s.apis(SERVICENAME))"
@@ -62,3 +63,4 @@ print "        : get the list of apis in the service"
 print "    demo()"
 print "        : show a little demo"
 print
+

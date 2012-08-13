@@ -3,20 +3,22 @@ Created on 10/lug/2012
 
 @author: Francesco Capozzo
 '''
-from tesi.daemons.xmlrpc.Service import Service
 import inspect
-from tesi.daemons.xmlrpc.API import API
+from myclips_server.xmlrpc.services.Service import Service
+from myclips_server.xmlrpc.Broker import Broker
 
 class TypeFactory(Service):
     '''
     Types Factory and Types operator proxy
     '''
+    _TYPE = "TypeFactory"
+    _NAME = "TypeFactory_TypeFactory"
 
-
-    def __init__(self, typeRegistry=None):
+    def __init__(self, factory, typeRegistry=None):
         '''
         Constructor
         '''
+        Service.__init__(self, factory)
         self._typeRegistry = typeRegistry if isinstance(typeRegistry, TypeRegistry) else TypeRegistry.default
     
     def getTypes(self):
@@ -96,7 +98,7 @@ class TypeRegistry(object):
         return [(typeName, typeDef['description']) for (typeName, typeDef) in self._types.items()]
     
     def getTypeOperators(self, typeName):
-        return [(opName, API._vectorizeArgs(opCall), inspect.getdoc(opCall)) for (opName, opCall) in self._types[typeName]["operators"].items()]
+        return [(opName, Broker._vectorizeArgs(opCall), inspect.getdoc(opCall)) for (opName, opCall) in self._types[typeName]["operators"].items()]
     
     def getOperatorImpl(self, typeSkeleton, operator):
         return self._types[typeSkeleton[0]]["operators"][operator]

@@ -3,20 +3,25 @@ Created on 15/lug/2012
 
 @author: Francesco Capozzo
 '''
-from tesi.daemons.xmlrpc.Service import Service
-from tesi.daemons.xmlrpc.TypeFactory import TypeRegistry
-from icse.Production import Production
+from myclips_server.xmlrpc.services.Service import Service
+from myclips_server.xmlrpc.services.TypeFactory import TypeRegistry
+import myclips.parser.Types as types
 
 class Rules(Service):
     '''
     classdocs
     '''
+    
+    _TYPE = "Rules"
+    _NAME = "Rules_Rules"
 
-    def __init__(self):
+    def __init__(self, factory):
         '''
         Constructor
         '''
-        TypeRegistry.default.addType("myclips.Rule", Production, "MyClips Production Rule",
+        Service.__init__(self, factory)
+        
+        TypeRegistry.default.addType("myclips.Rule", types.DefRuleConstruct, "MyClips Production Rule",
                                         ("myclips.Rule",[
                                                 ("name", ""),
                                                 ("comment", ""),
@@ -34,7 +39,7 @@ class Rules(Service):
                                          lambda t:t
                                     )
 
-        TypeRegistry.default.addType("myclips.PositivePredicate", Production, "MyClips Production Rule",
+        TypeRegistry.default.addType("myclips.PositivePredicate", types.PatternCE, "MyClips Production Rule",
                                         ("myclips.PositivePredicate",[
                                                 ("pattern", []), #1/0/1
                                                 ("assignment", []) #1/1/1
