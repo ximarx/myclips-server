@@ -91,9 +91,9 @@ def discover(pathlist=None, manifestFile=None, basePackage="myclips_server.xmlrp
                                                     : theClass._TYPE})
                             stats['services'] += 1
                             if not stats['types'].has_key(theClass._TYPE):
-                                stats['types'][theClass.TYPE] = [theClass.NAME]
+                                stats['types'][theClass._TYPE] = [theClass._NAME]
                             else:
-                                stats['types'][theClass.TYPE].append(theClass.NAME)
+                                stats['types'][theClass._TYPE].append(theClass._NAME)
 
             
     fr = open(manifestFile, "w")

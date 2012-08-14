@@ -1,0 +1,81 @@
+#!/usr/bin/python2.7
+
+import sys
+import os
+import importlib
+import time
+
+sys.stdout.write('#')
+
+MYCLIPS_SERVER_SRC_PATHS = ['./src/']
+
+pathIndex = -1
+while True:
+    try:
+        import myclips_server
+        break
+    except ImportError:
+        if pathIndex > -1:
+            sys.path.pop()
+        pathIndex += 1
+        try:
+            sys.path.append(os.path.abspath( MYCLIPS_SERVER_SRC_PATHS[pathIndex]))
+        except:
+            print >> sys.stderr, "MyCLIPS xmlrpc server not found in:"
+            print >> sys.stderr, "    ", os.path.abspath( "." )
+            for p in MYCLIPS_SERVER_SRC_PATHS:
+                print >> sys.stderr, "    ", os.path.abspath(p)
+            exit(-2)
+
+
+theSkeletonHeader = """\
+'''
+Created on {0}
+
+@author: Francesco Capozzo
+'''
+
+from myclips_server.xmlrpc.services.types.Skeleton import Skeleton
+
+"""
+
+theSkeletonString = """\
+
+class {0}(Skeleton):
+    
+    __CLASS__ = '{1}'
+    __PROPERTIES__ = {{
+        {2}
+    }}
+"""
+
+
+import myclips.parser.Types as types
+
+elements = [getattr(types, x) for x in dir(types)]
+
+TYPES = {}
+
+for aType in elements:
+    try:
+        if aType != types.ParsedType and issubclass(aType, types.ParsedType):
+            theSkeletonInfo = []
+            TYPES["myclips.parser.Types." + aType.__name__] = theSkeletonInfo
+            
+            for propName in aType.__FIELDS__:
+                theSkeletonInfo.append(propName)
+    except:
+        continue
+
+
+print theSkeletonHeader.format(time.asctime())
+
+for (sClass, sProps) in TYPES.items():
+
+    print theSkeletonString.format(sClass.split(".")[-1],
+                                   sClass,
+                                   ",\n\t\t".join([ ('"' + pName + '"' + " : None")  for pName in sProps ]) 
+                                   )
+
+
+

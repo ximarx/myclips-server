@@ -28,12 +28,14 @@ def main():
 #    })
 
     broker = Broker(services=[
+            services.factory.instance('Registry'),                              
             services.factory.instance('Sessions'),
             services.factory.instance('Network'),
-            services.factory.instance('TypeFactory'),
+            services.factory.instance('Types'),
+            services.factory.instance('AdminServices'),
     ])
     
-    server.register_instance(broker, True)
+    server.register_instance(broker)
     
     server.serve_forever()
     

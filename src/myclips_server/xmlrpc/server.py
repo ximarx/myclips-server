@@ -6,12 +6,18 @@ Created on 13/ago/2012
 from DocXMLRPCServer import XMLRPCDocGenerator, ServerHTMLDoc,\
     DocXMLRPCRequestHandler
 from SimpleXMLRPCServer import SimpleXMLRPCServer, resolve_dotted_attribute
+from myclips_server.xmlrpc.services.Service import Service
 
 class MyClipsXMLRPCDocGenerator(XMLRPCDocGenerator):
     
     def recursive_find_methods(self, methodsDict, dotObject, method_prefix=""):
         
-        for dotted in [x for x in dir(dotObject) if x[0] != '_']:
+        if isinstance(dotObject, Service) and hasattr(dotObject, '__API__'):
+            iterateOver = dotObject.__API__
+        else:
+            iterateOver = dir(dotObject) 
+        
+        for dotted in [x for x in iterateOver if x[0] != '_']:
             objectAttr = getattr(dotObject, dotted)
             if callable(objectAttr):
                 methodsDict[".".join([method_prefix, dotted]) if method_prefix != "" else dotted] = objectAttr

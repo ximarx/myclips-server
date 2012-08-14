@@ -6,10 +6,10 @@
         "name": "Rules_Rules"
     }, 
     {
-        "type": "TypeFactory", 
-        "class": "TypeFactory", 
-        "module": "myclips_server.xmlrpc.services.TypeFactory", 
-        "name": "TypeFactory_TypeFactory"
+        "type": "AdminServices", 
+        "class": "Services", 
+        "module": "myclips_server.xmlrpc.services.admin.Services", 
+        "name": "AdminServices_Services"
     }, 
     {
         "type": "Network", 
@@ -22,5 +22,17 @@
         "class": "Sessions", 
         "module": "myclips_server.xmlrpc.services.sessions.Sessions", 
         "name": "Sessions_Sessions"
+    }, 
+    {
+        "type": "Registry", 
+        "class": "Registry", 
+        "module": "myclips_server.xmlrpc.services.types.Registry", 
+        "name": "Registry_Registry"
+    }, 
+    {
+        "type": "Types", 
+        "class": "Types", 
+        "module": "myclips_server.xmlrpc.services.types.Types", 
+        "name": "Types_Types"
     }
 ]

@@ -4,7 +4,6 @@ Created on 15/lug/2012
 @author: Francesco Capozzo
 '''
 from myclips_server.xmlrpc.services.Service import Service
-from myclips_server.xmlrpc.services.TypeFactory import TypeRegistry
 import myclips.parser.Types as types
 
 class Rules(Service):
@@ -20,37 +19,6 @@ class Rules(Service):
         Constructor
         '''
         Service.__init__(self, factory)
-        
-        TypeRegistry.default.addType("myclips.Rule", types.DefRuleConstruct, "MyClips Production Rule",
-                                        ("myclips.Rule",[
-                                                ("name", ""),
-                                                ("comment", ""),
-                                                ("declarations", [
-                                                        ("salience", 0)
-                                                    ]),
-                                                ("lhs", []),
-                                                ("rhs", [])
-                                            ]), 
-                                        {
-                                            "setName": myclips_Rule_setName,
-                                            "setField": myclips_Rule_setField
-                                         }, 
-                                         lambda t:t,
-                                         lambda t:t
-                                    )
-
-        TypeRegistry.default.addType("myclips.PositivePredicate", types.PatternCE, "MyClips Production Rule",
-                                        ("myclips.PositivePredicate",[
-                                                ("pattern", []), #1/0/1
-                                                ("assignment", []) #1/1/1
-                                            ]), 
-                                        {
-                                            "setPattern": myclips_PositivePredicate_setPattern,
-                                            "setAssignment": myclips_PositivePredicate_setAssignment,
-                                         }, 
-                                         lambda t:t,
-                                         lambda t:t
-                                    )
         
     def ping(self):
         return "PONG"

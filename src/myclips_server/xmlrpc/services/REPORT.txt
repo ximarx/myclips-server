@@ -1,32 +1,42 @@
-//:~ MyCLIPS-Server services discovery report:  Mon Aug 13 20:08:59 2012
+//:~ MyCLIPS-Server services discovery report:  Tue Aug 14 10:02:31 2012
 
 myclips_server.xmlrpc.services
 	|--- .Rules
 	:   	|--- .Rules (Rules : Rules_Rules)
 	|--- .Service
-	|--- .TypeFactory
-	:   	|--- .TypeFactory (TypeFactory : TypeFactory_TypeFactory)
 	|--- .discover
+myclips_server.xmlrpc.services.admin
+	|--- .Services
+	:   	|--- .Services (AdminServices : AdminServices_Services)
 myclips_server.xmlrpc.services.network
 	|--- .Network
 	:   	|--- .Network (Network : Network_MyClips)
 myclips_server.xmlrpc.services.sessions
 	|--- .Sessions
 	:   	|--- .Sessions (Sessions : Sessions_Sessions)
+myclips_server.xmlrpc.services.types
+	|--- .Registry
+	:   	|--- .Registry (Registry : Registry_Registry)
+	|--- .Types
+	:   	|--- .Types (Types : Types_Types)
 
 ================================
-Number of types: 4
-  |- Rules:
-  :   |- Rules_Rules
-  |- TypeFactory:
-  :   |- TypeFactory_TypeFactory
+Number of types: 6
   |- Network:
   :   |- Network_MyClips
   |- Sessions:
   :   |- Sessions_Sessions
+  |- Rules:
+  :   |- Rules_Rules
+  |- AdminServices:
+  :   |- AdminServices_Services
+  |- Registry:
+  :   |- Registry_Registry
+  |- Types:
+  :   |- Types_Types
 
-Number of services: 4
+Number of services: 6
 
 ================================
 
-//:~  Mon Aug 13 20:08:59 2012
+//:~  Tue Aug 14 10:02:31 2012

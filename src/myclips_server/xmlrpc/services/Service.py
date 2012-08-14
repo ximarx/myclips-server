@@ -17,7 +17,13 @@ class Service(object):
         Constructor
         '''
         self._factory = factory
+        self._broker = None
         
+    def _onInitCompleted(self):
+        pass
+        
+    def setBroker(self, theBroker):
+        self._broker = theBroker
         
     def ping(self, aSession=None):
         """

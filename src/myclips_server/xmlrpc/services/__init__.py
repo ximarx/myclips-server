@@ -53,6 +53,10 @@ class Factory(object):
                         else:
                             self.register(serviceType, serviceInstance)
         
+        # send the _onInitCompleted signal
+        for serviceInstance in self._INSTANCES.values():
+            serviceInstance._onInitCompleted()
+        
     
     def instance(self, service):
         if not self.__ready: self.bootstrap()
