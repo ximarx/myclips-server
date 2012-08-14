@@ -83,7 +83,7 @@ class Sessions(Service):
         """
         self.get(aSessionToken).setProperty(aProperty, aValue)
     
-    def getProperty(self, aSessionToken, aProperty):
+    def getProperty(self, aSessionToken, aProperty, defaultValue=None):
         """
         Get a property value for the property aProperty
         in the session with token aSessionToken
@@ -96,7 +96,21 @@ class Sessions(Service):
         @rtype: mixed|None
         @raise KeyError: if aSessionToken is invalid
         """
-        return self.get(aSessionToken).getProperty(aProperty, None)
+        return self.get(aSessionToken).getProperty(aProperty, defaultValue)
+    
+    
+    def delProperty(self, aSessionToken, aProperty):
+        """
+        remove a property from the session with token aSessionToken
+        
+        @param aSessionToken: a valid session token
+        @type aSessionToken: string
+        @param aProperty: a property name
+        @type aProperty: string
+        @raise KeyError: if aSessionToken is invalid
+        """
+        return self.get(aSessionToken).delProperty(aProperty)
+    
     
     def isValid(self, aSessionToken):
         """
@@ -159,6 +173,10 @@ class Session(object):
         
     def setProperty(self, propName, propValue):
         self._properties[propName] = propValue
+        
+    def delProperty(self, propName):
+        # pop + default value avoid the need of try/catch + del statement
+        self._properties.pop(propName, True)
         
     def getProperty(self, propName, defaultValue=None):
         return self._properties.get(propName, defaultValue)

@@ -1,33 +1,42 @@
-//:~ MyCLIPS-Server services discovery report:  Tue Aug 14 10:02:31 2012
+//:~ MyCLIPS-Server services discovery report:  Tue Aug 14 20:08:44 2012
 
 myclips_server.xmlrpc.services
 	|--- .Rules
-	:   	|--- .Rules (Rules : Rules_Rules)
+No module named parser.Types
 	|--- .Service
 	|--- .discover
 myclips_server.xmlrpc.services.admin
 	|--- .Services
 	:   	|--- .Services (AdminServices : AdminServices_Services)
-myclips_server.xmlrpc.services.network
-	|--- .Network
-	:   	|--- .Network (Network : Network_MyClips)
+myclips_server.xmlrpc.services.clientio
+	|--- .ClientIO
+	:   	|--- .ClientIO (ClientIO : ClientIO_ClientIO)
+myclips_server.xmlrpc.services.myclips
+	|--- .Engine
+	:   	|--- .Engine (Engine : Engine_MyClips)
+	|--- .RemoteShell
+	:   	|--- .RemoteShell (RemoteShell : RemoteShell_MyClipsShell)
 myclips_server.xmlrpc.services.sessions
 	|--- .Sessions
 	:   	|--- .Sessions (Sessions : Sessions_Sessions)
 myclips_server.xmlrpc.services.types
 	|--- .Registry
 	:   	|--- .Registry (Registry : Registry_Registry)
+	|--- .Skeleton
 	|--- .Types
 	:   	|--- .Types (Types : Types_Types)
+	|--- .skeletons
 
 ================================
-Number of types: 6
-  |- Network:
-  :   |- Network_MyClips
+Number of types: 7
+  |- Engine:
+  :   |- Engine_MyClips
+  |- RemoteShell:
+  :   |- RemoteShell_MyClipsShell
+  |- ClientIO:
+  :   |- ClientIO_ClientIO
   |- Sessions:
   :   |- Sessions_Sessions
-  |- Rules:
-  :   |- Rules_Rules
   |- AdminServices:
   :   |- AdminServices_Services
   |- Registry:
@@ -35,8 +44,8 @@ Number of types: 6
   |- Types:
   :   |- Types_Types
 
-Number of services: 6
+Number of services: 7
 
 ================================
 
-//:~  Tue Aug 14 10:02:31 2012
+//:~  Tue Aug 14 20:08:45 2012

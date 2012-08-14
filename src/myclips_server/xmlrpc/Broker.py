@@ -55,7 +55,9 @@ class Broker(object):
             return theObj(*args)
         except:
             print "Request:\n\tMethod-Name: %s\n\tArgs: %s"%(methodName, args)
+            print
             traceback.print_exc()
+            print "---------------------"
             raise
         
 

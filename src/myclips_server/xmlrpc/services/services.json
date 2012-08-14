@@ -1,21 +1,27 @@
 [
     {
-        "type": "Rules", 
-        "class": "Rules", 
-        "module": "myclips_server.xmlrpc.services.Rules", 
-        "name": "Rules_Rules"
-    }, 
-    {
         "type": "AdminServices", 
         "class": "Services", 
         "module": "myclips_server.xmlrpc.services.admin.Services", 
         "name": "AdminServices_Services"
     }, 
     {
-        "type": "Network", 
-        "class": "Network", 
-        "module": "myclips_server.xmlrpc.services.network.Network", 
-        "name": "Network_MyClips"
+        "type": "ClientIO", 
+        "class": "ClientIO", 
+        "module": "myclips_server.xmlrpc.services.clientio.ClientIO", 
+        "name": "ClientIO_ClientIO"
+    }, 
+    {
+        "type": "Engine", 
+        "class": "Engine", 
+        "module": "myclips_server.xmlrpc.services.myclips.Engine", 
+        "name": "Engine_MyClips"
+    }, 
+    {
+        "type": "RemoteShell", 
+        "class": "RemoteShell", 
+        "module": "myclips_server.xmlrpc.services.myclips.RemoteShell", 
+        "name": "RemoteShell_MyClipsShell"
     }, 
     {
         "type": "Sessions", 

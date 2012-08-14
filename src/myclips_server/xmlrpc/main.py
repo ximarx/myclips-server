@@ -30,7 +30,9 @@ def main():
     broker = Broker(services=[
             services.factory.instance('Registry'),                              
             services.factory.instance('Sessions'),
-            services.factory.instance('Network'),
+            services.factory.instance('ClientIO'),
+            services.factory.instance('Engine'),
+            services.factory.instance('RemoteShell'),
             services.factory.instance('Types'),
             services.factory.instance('AdminServices'),
     ])
