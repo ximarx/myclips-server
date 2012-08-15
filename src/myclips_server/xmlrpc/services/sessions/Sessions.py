@@ -83,7 +83,7 @@ class Sessions(Service):
         """
         self.get(aSessionToken).setProperty(aProperty, aValue)
     
-    def getProperty(self, aSessionToken, aProperty, defaultValue=None):
+    def getProperty(self, aSessionToken, aProperty, *args):
         """
         Get a property value for the property aProperty
         in the session with token aSessionToken
@@ -96,8 +96,10 @@ class Sessions(Service):
         @rtype: mixed|None
         @raise KeyError: if aSessionToken is invalid
         """
-        return self.get(aSessionToken).getProperty(aProperty, defaultValue)
-    
+        if len(args):
+            return self.get(aSessionToken).getProperty(aProperty, args[0])
+        else:
+            return self.get(aSessionToken).getProperty(aProperty)
     
     def delProperty(self, aSessionToken, aProperty):
         """
@@ -178,8 +180,11 @@ class Session(object):
         # pop + default value avoid the need of try/catch + del statement
         self._properties.pop(propName, True)
         
-    def getProperty(self, propName, defaultValue=None):
-        return self._properties.get(propName, defaultValue)
+    def getProperty(self, propName, *args):
+        if len(args):
+            return self._properties.get(propName, args[0])
+        else:
+            return self._properties[propName]
     
     def setParam(self, paramName, paramValue):
         self._params[paramName] = paramValue
