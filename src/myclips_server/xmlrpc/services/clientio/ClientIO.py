@@ -10,8 +10,30 @@ class ClientIO(Service):
     '''
     ClientIO service:
         Allows a client to register one or more input/output streams.
-        Allows other services to use registered stream to send data
-        to a client 
+        Allows other services to use registered stream with any interface
+        
+        
+    The client must implement a xmlrpc end-point with at-least the following
+    methods:
+    
+        - .ping(string aReverseToken) : True
+            Used by the server to check if stream is valid
+            
+        - .write(string aReverseToken, string theString) : None
+            Used by the server to send data (in string format)
+            
+        - .writelines(string aReverseToken, list someStrings) : None
+            Used by the server to send a list of string
+            
+        - .close(string aReverseToken) : None
+            Used by the server to notify the client about stream unregistering
+            
+        - .seek(string aReverseToken, int aPosition, int aMode) : Boolean
+            Used by the server to move the stream cursor position in the stream
+            
+        - .readline(string aReverseToken) : String
+            Used by the server to read a line from the client stream
+            
     '''
     
     _TYPE = "ClientIO"
