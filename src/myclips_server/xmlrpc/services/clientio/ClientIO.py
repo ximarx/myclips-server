@@ -36,7 +36,10 @@ class ClientIO(Service):
             
         - .__call(string aReverseToken, string aMissingMethodName, *args, **kwargs) : mixed
             This method will be called if a required method is missing. 
-            If this method is missing too, an XMLRPC Fault will be raised
+            If this method is missing too, an XMLRPC Fault will be raised.
+            
+        A client end-point is still valid if it implements only the .__call method as
+        router for others
             
     '''
     
@@ -162,7 +165,14 @@ class ClientIOStream(object):
         return "<ClientIOStream %s>"%repr(self._theServer)
     
     def __getattr__(self, name):
-        return lambda *args, **kwargs: getattr(self._theServer, name)(self._theReverseToken, *args, **kwargs)
+        def __forward_call(*args, **kwargs):
+            try:
+                return getattr(self._theServer, name)(self._theReverseToken, *args, **kwargs)
+            except xmlrpclib.Fault:
+                return self._theServer.__call(self._theReverseToken, name, *args, **kwargs)
+        
+        return __forward_call
+
 
     def __hasattr__(self, name):
         return True
