@@ -46,7 +46,7 @@ def tryDraw():
     linkStream()
     
     s.RemoteShell.do(aToken, '(defrule r (A B C) =>)')
-    s.RemoteShell.do(aToken, '(draw-circuit r)')
+    s.RemoteShell.do(aToken, '(draw-circuit nil r)')
     
 
 print "type:"

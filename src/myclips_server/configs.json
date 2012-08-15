@@ -1,0 +1,28 @@
+{
+	"xmlrpc-server": {
+		"bind-address": "localhost",
+		"bind-port": 8081,
+		"log-requests": true,
+		"log-level": 0
+	},
+	
+	"myclips": {
+		"log-level": 0,
+		"search-paths": [
+			"../../myclips", "../../../myclips", "../myclips", "../lib/myclips",
+			"../../myclips/src/", "../../../myclips/src/", "../myclips/src", "../lib/myclips/src"
+		],
+		"system-functions": {
+			"replace": [{
+		        "module": "myclips_server.server_functions.DrawCircuit",
+		        "class": "DrawCircuit"
+		    }],
+			"register": [
+			],
+			"remove": [
+				"open",
+				"close"
+			]
+		}
+	}
+}

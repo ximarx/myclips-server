@@ -1,33 +1,61 @@
 import traceback
-
-
-MYCLIPS_LIB_SRC_PATH = ['../../myclips', '../../../myclips', '../myclips', '../lib/myclips',
-                        '../../myclips/src/', '../../../myclips/src/', '../myclips/src', '../lib/myclips/src']
-
-MYCLIPS_FUNCTIONS_REPLACEMENTS = [{
-        "module": 'myclips_server.server_functions.DrawCircuit',
-        "class": 'DrawCircuit',
-    }]
-
-
 import logging as _logging
 import sys
 import os
+import json
 
+__author__  = "Francesco Capozzo <ximarx@gmail.com>"
+__status__  = "development"
+__version__ = "0.0-dev"
+
+try:
+    CONFIGURATIONS = json.load(open(os.path.dirname(__file__)+'/configs.json', "rU"))
+except:
+    print >> sys.stderr, "Error loading configurations"
+    traceback.print_exc()
+    CONFIGURATIONS = {
+        "myclips_server": {
+            "bind-address": "localhost",
+            "bind-port": 8081,
+            "log-requests": True,
+            "log-level": 20
+        },
+        "myclips": {
+            "log-level": 20,
+            "search-paths": [
+                '../../myclips', '../../../myclips', '../myclips', '../lib/myclips',
+                '../../myclips/src/', '../../../myclips/src/', '../myclips/src', '../lib/myclips/src'
+            ],
+            "system-functions": {
+                "remove": [
+                    'open', 'close'
+                ],
+                "replace": [],
+                "register": []
+            }
+        }
+    }
+    
+
+MYCLIPS_LIB_SRC_PATH = CONFIGURATIONS.get('myclips', {}).get('search-paths', [])
+MYCLIPS_FUNCTIONS_REPLACEMENTS = CONFIGURATIONS.get('myclips', {}).get('system-functions', {}).get('replace', [])
+MYCLIPS_FUNCTIONS_REMOVALS = CONFIGURATIONS.get('myclips', {}).get('system-functions', {}).get('remove', [])
+MYCLIPS_FUNCTIONS_REGISTRATIONS = CONFIGURATIONS.get('myclips', {}).get('system-functions', {}).get('register', [])
 
 
 FORMAT = '[%(levelname).3s %(module)s::%(funcName)s:%(lineno)d] %(message)s'
 _logging.basicConfig(format=FORMAT)
 
 logger = _logging.getLogger('myclips_server')
-logger.setLevel(_logging.ERROR)
+logger.setLevel(CONFIGURATIONS.get('myclips_server', {}).get('log-level', 20))
 
 
 pathIndex = -1
 while True:
     try:
         import myclips
-        print "Using: ", repr(myclips)
+        logger.info("Using: %s", repr(myclips))
+        myclips.logger.setLevel(CONFIGURATIONS.get('myclips', {}).get('log-level', 40))
         break
     except ImportError:
         if pathIndex > -1:
@@ -48,6 +76,7 @@ from myclips.MyClipsException import MyClipsException
 class MyClipsServerException(MyClipsException):
     pass
 
+
 def __replaceFuncs(_F_REPLACEMENTS):
 
     # replace some system function definition with a server-proof version:
@@ -61,7 +90,10 @@ def __replaceFuncs(_F_REPLACEMENTS):
         
         for _funcInfo in _F_REPLACEMENTS:
     
-            print "Replacing: ", _funcInfo    
+            logger.info("Replacing: %s", str(_funcInfo))    
+    
+            _moduleName = "<none>"
+            _className = "<none>"    
     
             try:
                 # prepare the replacement
@@ -69,15 +101,70 @@ def __replaceFuncs(_F_REPLACEMENTS):
                 _moduleName = _funcInfo['module']
                 _className = _funcInfo['class']
                 _funcInstance = myclips.newInstance(_className, None, _moduleName)
+                _mycfuncs.SystemFunctionBroker.register(_funcInstance, True)
             except:
-                print "\t... Error"
-                traceback.print_exc()
+                logger.critical("Error replacing %s.%s\n%s---------------\n", _moduleName, _className, traceback.format_exc() )
             else:
                 # then replace the definition
-                _mycfuncs.SystemFunctionBroker.register(_funcInstance, True)
-                print "\t... Done"
+                logger.info("\t\t...Done")
 
 
+def __registerFuncs(_F_REGISTERS):
+
+    # replace some system function definition with a server-proof version:
+    
+    if len(_F_REGISTERS):
+    
+        import myclips.functions as _mycfuncs
+        
+        # manually bootstrap system functions
+        _mycfuncs.SystemFunctionBroker.bootstrap()
+        
+        for _funcInfo in _F_REGISTERS:
+    
+            logger.info("Registering: %s", str(_funcInfo))
+            
+            _moduleName = "<none>"
+            _className = "<none>"    
+    
+            try:
+                # prepare the replacement
+                
+                _moduleName = _funcInfo['module']
+                _className = _funcInfo['class']
+                _funcInstance = myclips.newInstance(_className, None, _moduleName)
+                _mycfuncs.SystemFunctionBroker.register(_funcInstance, False)
+            except:
+                logger.critical("Error registering %s.%s\n%s---------------\n", _moduleName, _className, traceback.format_exc() )
+            else:
+                # then replace the definition
+                logger.info("\t\t...Done")
+
+
+def __removeFuncs(_F_REMOVES):
+
+    # replace some system function definition with a server-proof version:
+    
+    if len(_F_REMOVES):
+    
+        import myclips.functions as _mycfuncs
+        
+        # manually bootstrap system functions
+        _mycfuncs.SystemFunctionBroker.bootstrap()
+        
+        for _funcInfo in _F_REMOVES:
+    
+            logger.info("Removing: %s", str(_funcInfo))
+            try:
+                _mycfuncs.SystemFunctionBroker.unregister(_funcInfo)
+            except:
+                logger.critical("Error removing %s\n%s--------------\n", _funcInfo, traceback.format_exc() )
+            else:
+                logger.info("\t\t...Done")
+
+
+__removeFuncs(MYCLIPS_FUNCTIONS_REMOVALS)
+__registerFuncs(MYCLIPS_FUNCTIONS_REGISTRATIONS)
 __replaceFuncs(MYCLIPS_FUNCTIONS_REPLACEMENTS) 
 
 

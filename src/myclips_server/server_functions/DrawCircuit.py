@@ -17,10 +17,14 @@ class DrawCircuit(Function):
         Function.__init__(self, *args, **kwargs)
         
         
-    def do(self, theEnv, *args, **kargs):
+    def do(self, theEnv, theStream, *args, **kargs):
         """
         function handler implementation
         """
+        
+        theStream = self.resolve(theEnv, 
+                                 self.semplify(theEnv, theStream, types.Symbol, ("1", "symbol")))
+        
         try:
             _thePNodes = [theEnv.network.getPNode(ruleName) 
                             for ruleName 
@@ -45,17 +49,24 @@ class DrawCircuit(Function):
             thePlotter = debug.prepare_network_fragment_plotter(thePNodes)
             
             try:
-                theStream = theEnv.RESOURCES['wtrace']
-                theStream.write(thePlotter.dot_string())
-            except Exception, e:
-                print e
+                theDotString = thePlotter.dot_string()
+            except:
+                theDotString = ""
             
-            return types.NullValue()
+            if theStream != 'nil':
+                try:
+                    theStream = theEnv.RESOURCES[theStream]
+                    theStream.write(theDotString)
+                except Exception, e:
+                    #print e
+                    pass
+            
+            return types.String(theDotString)
     
     
-DrawCircuit.DEFINITION = FunctionDefinition("?SYSTEM?", "draw-circuit", DrawCircuit(), types.NullValue, DrawCircuit.do ,
+DrawCircuit.DEFINITION = FunctionDefinition("?SYSTEM?", "draw-circuit", DrawCircuit(), types.String, DrawCircuit.do ,
             [
-                Constraint_MinArgsLength(1),
+                Constraint_MinArgsLength(2),
                 Constraint_ArgType(types.Symbol),
             ],forward=False)
         
