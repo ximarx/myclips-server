@@ -34,6 +34,10 @@ class ClientIO(Service):
         - .readline(string aReverseToken) : String
             Used by the server to read a line from the client stream
             
+        - .__call(string aReverseToken, string aMissingMethodName, *args, **kwargs) : mixed
+            This method will be called if a required method is missing. 
+            If this method is missing too, an XMLRPC Fault will be raised
+            
     '''
     
     _TYPE = "ClientIO"
