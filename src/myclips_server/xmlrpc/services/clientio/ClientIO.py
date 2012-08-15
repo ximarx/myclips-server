@@ -8,7 +8,10 @@ import xmlrpclib
 
 class ClientIO(Service):
     '''
-    classdocs
+    ClientIO service:
+        Allows a client to register one or more input/output streams.
+        Allows other services to use registered stream to send data
+        to a client 
     '''
     
     _TYPE = "ClientIO"
@@ -17,6 +20,24 @@ class ClientIO(Service):
 
 
     def register(self, aSessionToken, aStreamName, aStreamAddress, aReverseToken):
+        '''
+        Register a xmlrpc end-point of the client as a stream
+        If a stream with the same identifier is already registered,
+        it will be unregister and then replaced
+        
+        The registration protocol requires the client end-point to
+        reply to a <client-end-point>.ping(aReverseToken) method call
+        before the registration will be completed
+        
+        @param aSessionToken: a token for a valid session
+        @type aSessionToken: string
+        @param aStreamName: the identifier of the stream after the registration
+        @type aStreamName: string
+        @param aStreamAddress: the url of the xmlrpc server of the client where streams methods will be redirected
+        @type aStreamAddress: string
+        @param aReverseToken: a <secret-code> the server will send with data to identify a valid transmission 
+        @type aReverseToken: mixed
+        '''
         
         theStreamName = "ClientIO_ClientIO.streams.%s"%aStreamName
         theSessionsService = self._factory.instance('Sessions')
@@ -33,6 +54,20 @@ class ClientIO(Service):
         theSessionsService.setProperty(aSessionToken, theStreamName, ClientIOStream( aReverseToken, theStream))
         
     def unregister(self, aSessionToken, aStreamName):
+        '''
+        Remove a registered stream.
+        
+        The method <client-end-point>.close(aReverseToken) will be call
+        before stream removal (as notification). The removal will
+        take place even in case of close-call failure 
+        
+        @param aSessionToken: a token for a valid session
+        @type aSessionToken: string
+        @param aStreamName: the identifier of the stream to remove
+        @type aStreamName: string
+        @raise KeyError: if aStreamName is not a valid stream identifier
+        '''
+        
         theStreamName = "ClientIO_ClientIO.streams.%s"%aStreamName
         theSessionsService = self._factory.instance('Sessions')
         
@@ -45,6 +80,18 @@ class ClientIO(Service):
         theSessionsService.delProperty(aSessionToken, theStreamName)
         
     def getStreamInfo(self, aSessionToken, aStreamName):
+        '''
+        Return the repr() string for the stream idenfitied by aStreamName
+        
+        @param aSessionToken: a token for a valid session
+        @type aSessionToken: string
+        @param aStreamName: a valid stream identifier
+        @type aStreamName: string
+        @return: representation of the stream object
+        @rtype: string 
+        @raise KeyError: if aStreamName or aSessionToken are invalid
+        '''
+        
         theStreamName = "ClientIO_ClientIO.streams.%s"%aStreamName
         theSessionsService = self._factory.instance('Sessions')
         
@@ -52,16 +99,35 @@ class ClientIO(Service):
             
         
     def getStream(self, aSessionToken, aStreamName):
+        '''
+        Return a ClientIOStream instance for the aStreamName identifier
+        @param aSessionToken: a valid session token
+        @type aSessionToken: string
+        @param aStreamName: a valid stream identifier
+        @type aStreamName: string
+        @return: the ClientIOStream instance for the stream identifier
+        @rtype: ClientIOStream
+        '''
+        
         theStreamName = "ClientIO_ClientIO.streams.%s"%aStreamName
         theSessionsService = self._factory.instance('Sessions')
         
         return theSessionsService.getProperty(aSessionToken, theStreamName)
     
     def printTo(self, aSessionToken, aStreamName, aMessage):
+        '''
+        Helper method to send a message to a stream
+        
+        @deprecated
+        '''
+        
         self.getStream(aSessionToken, aStreamName).write(aMessage + "\n")
         
     
 class ClientIOStream(object):
+    """
+    Wrapper for a remove client stream
+    """
     def __init__(self, theReverseToken, theServer):
         self._theReverseToken = theReverseToken
         self._theServer = theServer
