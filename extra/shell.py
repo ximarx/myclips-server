@@ -8,12 +8,14 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer
 def aStream():
     
     #aFile = open("./_THE_STREAM_.txt", "w")
-    aFile = sys.stdout
+    oFile = sys.stdout
+    iFile = sys.stdin
     
     fakeStdOut = SimpleXMLRPCServer(("localhost", 55555), allow_none=True, logRequests=False)    
     fakeStdOut.register_function(lambda t: "pong", 'ping')    
-    fakeStdOut.register_function(lambda t,s: aFile.write("RPC: "+s) or True, 'write')
-    fakeStdOut.register_function(lambda *args: aFile.write("RPC: CLOSE!") or True, 'close')
+    fakeStdOut.register_function(lambda t,s: oFile.write("RPC: "+s) or True, 'write')
+    fakeStdOut.register_function(lambda *args: oFile.write("RPC: CLOSE!") or True, 'close')
+    fakeStdOut.register_function(lambda t: oFile.write("RPC Input: ") or iFile.readline(), 'readline')
     
     thread.start_new_thread(fakeStdOut.serve_forever, ())
 
@@ -36,7 +38,7 @@ def linkStream():
     
     s.ClientIO.register(aToken, "t", "http://localhost:55555", 324)
     s.ClientIO.register(aToken, "stdout", "http://localhost:55555", 324)
-    s.ClientIO.register(aToken, "stderr", "http://localhost:55555", 324)
+    s.ClientIO.register(aToken, "stdin", "http://localhost:55555", 324)
     
     
 
