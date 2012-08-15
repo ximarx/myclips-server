@@ -39,9 +39,15 @@ def linkStream():
     s.ClientIO.register(aToken, "t", "http://localhost:55555", 324)
     s.ClientIO.register(aToken, "stdout", "http://localhost:55555", 324)
     s.ClientIO.register(aToken, "stdin", "http://localhost:55555", 324)
+    s.ClientIO.register(aToken, "wtrace", "http://localhost:55555", 324)
     
     
-
+def tryDraw():
+    linkStream()
+    
+    s.RemoteShell.do(aToken, '(defrule r (A B C) =>)')
+    s.RemoteShell.do(aToken, '(draw-circuit r)')
+    
 
 print "type:"
 print "    pp(s.services())"

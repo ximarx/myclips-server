@@ -1,3 +1,14 @@
+import traceback
+
+
+MYCLIPS_LIB_SRC_PATH = ['../../myclips', '../../../myclips', '../myclips', '../lib/myclips',
+                        '../../myclips/src/', '../../../myclips/src/', '../myclips/src', '../lib/myclips/src']
+
+MYCLIPS_FUNCTIONS_REPLACEMENTS = [{
+        "module": 'myclips_server.server_functions.DrawCircuit',
+        "class": 'DrawCircuit',
+    }]
+
 
 import logging as _logging
 import sys
@@ -11,9 +22,6 @@ _logging.basicConfig(format=FORMAT)
 logger = _logging.getLogger('myclips_server')
 logger.setLevel(_logging.ERROR)
 
-
-MYCLIPS_LIB_SRC_PATH = ['../../myclips', '../../../myclips', '../myclips', '../lib/myclips',
-                        '../../myclips/src/', '../../../myclips/src/', '../myclips/src', '../lib/myclips/src']
 
 pathIndex = -1
 while True:
@@ -39,3 +47,40 @@ from myclips.MyClipsException import MyClipsException
 
 class MyClipsServerException(MyClipsException):
     pass
+
+def __replaceFuncs(_F_REPLACEMENTS):
+
+    # replace some system function definition with a server-proof version:
+    
+    if len(_F_REPLACEMENTS):
+    
+        import myclips.functions as _mycfuncs
+        
+        # manually bootstrap system functions
+        _mycfuncs.SystemFunctionBroker.bootstrap()
+        
+        for _funcInfo in _F_REPLACEMENTS:
+    
+            print "Replacing: ", _funcInfo    
+    
+            try:
+                # prepare the replacement
+                
+                _moduleName = _funcInfo['module']
+                _className = _funcInfo['class']
+                _funcInstance = myclips.newInstance(_className, None, _moduleName)
+            except:
+                print "\t... Error"
+                traceback.print_exc()
+            else:
+                # then replace the definition
+                _mycfuncs.SystemFunctionBroker.register(_funcInstance, True)
+                print "\t... Done"
+
+
+__replaceFuncs(MYCLIPS_FUNCTIONS_REPLACEMENTS) 
+
+
+
+
+

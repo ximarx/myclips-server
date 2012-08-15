@@ -71,6 +71,8 @@ class ClientIOStream(object):
     
     def __getattr__(self, name):
         return lambda *args, **kwargs: getattr(self._theServer, name)(self._theReverseToken, *args, **kwargs)
-        
+
+    def __hasattr__(self, name):
+        return True
         
     
