@@ -8,6 +8,7 @@
 			"Registry":			"Registry_Registry",
 			"Sessions":			"Sessions_Sessions",
 			"ClientIO":			"ClientIO_ClientIO",
+			"Engine": 			"Engine_MyClips",
 			"RemoteShell": 		"RemoteShell_MyClipsShell",
 			"AdminServices": 	"AdminServices_Services"
 		}
