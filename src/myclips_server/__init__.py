@@ -3,6 +3,7 @@ import logging as _logging
 import sys
 import os
 import json
+from xmlrpclib import Fault
 
 __author__  = "Francesco Capozzo <ximarx@gmail.com>"
 __status__  = "development"
@@ -18,10 +19,14 @@ except:
             "bind-address": "localhost",
             "bind-port": 8081,
             "log-requests": True,
-            "log-level": 20
+            "log-level": _logging.WARNING,
+            "services": [
+                "Registry", "Sessions", "Engine"
+            ]
+
         },
         "myclips": {
-            "log-level": 20,
+            "log-level": _logging.ERROR,
             "search-paths": [
                 '../../myclips', '../../../myclips', '../myclips', '../lib/myclips',
                 '../../myclips/src/', '../../../myclips/src/', '../myclips/src', '../lib/myclips/src'
@@ -42,12 +47,12 @@ MYCLIPS_FUNCTIONS_REPLACEMENTS = CONFIGURATIONS.get('myclips', {}).get('system-f
 MYCLIPS_FUNCTIONS_REMOVALS = CONFIGURATIONS.get('myclips', {}).get('system-functions', {}).get('remove', [])
 MYCLIPS_FUNCTIONS_REGISTRATIONS = CONFIGURATIONS.get('myclips', {}).get('system-functions', {}).get('register', [])
 
-
 FORMAT = '[%(levelname).3s %(module)s::%(funcName)s:%(lineno)d] %(message)s'
 _logging.basicConfig(format=FORMAT)
 
+
 logger = _logging.getLogger('myclips_server')
-logger.setLevel(CONFIGURATIONS.get('myclips_server', {}).get('log-level', 20))
+logger.setLevel(CONFIGURATIONS.get('myclips_server', {}).get('log-level', _logging.WARNING))
 
 
 pathIndex = -1
@@ -55,7 +60,7 @@ while True:
     try:
         import myclips
         logger.info("Using: %s", repr(myclips))
-        myclips.logger.setLevel(CONFIGURATIONS.get('myclips', {}).get('log-level', 40))
+        myclips.logger.setLevel(CONFIGURATIONS.get('myclips', {}).get('log-level', _logging.ERROR))
         break
     except ImportError:
         if pathIndex > -1:
@@ -76,7 +81,16 @@ from myclips.MyClipsException import MyClipsException
 class MyClipsServerException(MyClipsException):
     pass
 
-class InvalidArgTypeError(MyClipsServerException):
+class MyClipsServerFault(MyClipsServerException, Fault):
+    def __init__(self, message="", code=1000, *args, **kwargs):
+        MyClipsServerException.__init__(self, message=message, *args, **kwargs)
+        Fault.__init__(self, code, "[%s] %s"%(self.__class__.__name__, message), **kwargs)
+
+class ServiceNotFoundFault(MyClipsServerFault):
+    def __init__(self, message="", *args, **kwargs):
+        MyClipsServerFault.__init__(self, message=message, code=1998, *args, **kwargs)
+
+class InvalidArgTypeError(MyClipsServerFault):
     def __init__(self, funcName="", argNum=None, expectedSkeleton=None, foundClass=None, *args, **kwargs):
         
         message="Function %(funcName)s expects arguments #%(argNum)s to be a %(expected)s, but found %(found)s"%{
@@ -85,7 +99,7 @@ class InvalidArgTypeError(MyClipsServerException):
                     'expected' :    str(expectedSkeleton),
                     'found':        str(foundClass)}
         
-        MyClipsServerException.__init__(self, message=message, *args, **kwargs)
+        MyClipsServerFault.__init__(self, message=message, code=1001, *args, **kwargs)
 
 def __replaceFuncs(_F_REPLACEMENTS):
 

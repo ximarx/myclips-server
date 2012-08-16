@@ -18,12 +18,10 @@ class Registry(Service):
     _NAME = "Registry_Registry"
     __API__ = ['ping', 'new', 'getSkeletons', 'isSkeleton']
     
-    default = None
-    
-    def __init__(self, factory, types=None):
+    def __init__(self, factory, theSkeletonModule=None):
         Service.__init__(self, factory)
         self._skeletons = {}
-        self._setupSkeletons()
+        self._setupSkeletons(theSkeletonModule)
     
     def _setupSkeletons(self, theSkeletonsModule = None):
         theSkeletonsModule = theSkeletonsModule or skeletons
@@ -114,7 +112,7 @@ class Registry(Service):
                 
     def toSkeleton(self, aSkeletonable):
         
-        if isinstance(aSkeletonable, list):
+        if isinstance(aSkeletonable, (list, tuple)):
             
             return [self.toSkeleton(x) for x in aSkeletonable]
         
@@ -174,7 +172,7 @@ class Registry(Service):
         # if the types requires the modulesManager, inject its in the parameters
         if issubclass(theClass, types.HasScope):
             # need to fetch the modulesManager linked to the network from the session
-            theEngineService = self._factory.instance('Engine')
+            theEngineService = self._broker.Engine
             theNetwork = theEngineService.getNetwork(aSessionToken)
                 
             assert isinstance(theNetwork, Network)

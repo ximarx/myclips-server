@@ -18,12 +18,14 @@ class Factory(object):
     
     def register(self, serviceType, serviceInstance, replaceDefault=False):
         
-        if self._INSTANCES.has_key(serviceType) and not replaceDefault:
-            self._INSTANCES[serviceInstance._NAME] = serviceInstance
-            return
-            
-        self._INSTANCES[serviceType] = serviceInstance
+        self._INSTANCES[serviceInstance._NAME] = serviceInstance
         
+        if replaceDefault or not self._INSTANCES.has_key(serviceType):
+            self._INSTANCES[serviceType] = serviceInstance
+        
+        
+    def services(self):
+        return self._INSTANCES.keys()
     
     def bootstrap(self):
 

@@ -21,7 +21,7 @@ def aStream():
 
 
 def gs():
-    return xmlrpclib.Server('http://localhost:8081', allow_none=True)
+    return xmlrpclib.Server('http://localhost:8081', allow_none=True, verbose=False)
 
 def myself():
     return xmlrpclib.Server('http://localhost:55555', allow_none=True)

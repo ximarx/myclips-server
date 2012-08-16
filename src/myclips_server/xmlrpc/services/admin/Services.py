@@ -13,16 +13,17 @@ class Services(Service):
 
     _NAME = "AdminServices_Services"
     _TYPE = "AdminServices"
-    __API__ = ["ping", "restart", "install", "replace", "remove", "refresh"]
+    __API__ = ["ping", "restart", "install", "replace", "remove", "refresh", "start"]
     
-    def start(self, aServiceType):
-        theService = self._factory.instance(aServiceType)
+    def start(self, aServiceName, asType=None):
+        theService = self._factory.instance(aServiceName)
         theService.setBroker(self._broker)
-        if self._broker._services.has_key(theService._TYPE):
-            serviceKey = theService._NAME
+        if asType is not None:
+            serviceKey = asType
         else:
-            serviceKey = theService._TYPE
+            serviceKey = theService._NAME
         self._broker._services[serviceKey] = theService
+        setattr(self._broker, serviceKey, theService)
         
         return serviceKey
     
@@ -34,17 +35,18 @@ class Services(Service):
         return True
         
     
-    def install(self, aServiceName, moduleName, className):
+    def install(self, moduleName, className, aServiceName=None):
         theModule = importlib.import_module(moduleName)
         reload(theModule)
         theService = getattr(theModule, className)(self._factory)
         theService._onInitCompleted()
         theService.setBroker(self._broker)
-        if self._broker._services.has_key(theService._TYPE):
-            serviceKey = theService._NAME
+        if aServiceName is not None:
+            serviceKey = aServiceName
         else:
-            serviceKey = theService._TYPE
+            serviceKey = theService._NAME
         self._broker._services[serviceKey] = theService
+        setattr(self._broker, serviceKey, theService)
         
         return serviceKey
     
@@ -56,10 +58,12 @@ class Services(Service):
         theService._onInitCompleted()
         theService.setBroker(self._broker)
         self._broker._services[aServiceName] = theService
+        setattr(self._broker, aServiceName, theService)
         return True
     
     def remove(self, aServiceName):
         del self._broker._services[aServiceName]
+        delattr(self._broker, aServiceName)
         
     def refresh(self, aModule):
         aModule = importlib.import_module(aModule)

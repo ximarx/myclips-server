@@ -45,8 +45,36 @@ class ClientIO(Service):
     
     _TYPE = "ClientIO"
     _NAME = "ClientIO_ClientIO"
-    __API__= ['register', 'unregister', 'getStreamInfo', 'printTo']
+    __API__= ['register', 'unregister', 'getStreamInfo', 'printTo', 'getStreamNames']
 
+
+    def onSessionDestroy(self, aSessionToken):
+        '''
+        Destory all registered stream for a session
+        @param aSessionToken: a token for a valid session
+        @type aSessionToken: string
+        '''
+        theSessionsService = self._broker.Sessions
+        try:
+            for theStreamName in self.getStreamNames(aSessionToken):
+                try:
+                    self.unregister(aSessionToken, theStreamName)
+                except:
+                    pass
+        except:
+            pass
+        theSessionsService.delProperty(aSessionToken, "ClientIO_ClientIO.streams")
+        
+    def getStreamNames(self, aSessionToken):
+        '''
+        Get a list of all registered stream names for a session
+        @param aSessionToken: a token for a valid session
+        @type aSessionToken: string
+        @return: a list of stream names
+        @rtype: list
+        '''
+        theSessionsService = self._broker.Sessions
+        return theSessionsService.getProperty(aSessionToken, "ClientIO_ClientIO.streams", {}).keys()
 
     def register(self, aSessionToken, aStreamName, aStreamAddress, aReverseToken):
         '''
@@ -68,19 +96,25 @@ class ClientIO(Service):
         @type aReverseToken: mixed
         '''
         
-        theStreamName = "ClientIO_ClientIO.streams.%s"%aStreamName
-        theSessionsService = self._factory.instance('Sessions')
+        #theStreamName = "ClientIO_ClientIO.streams.%s"%aStreamName
+        theSessionsService = self._broker.Sessions
         
         try:
-            theSessionsService.getProperty(aSessionToken, theStreamName, None).close()
+            self.unregister(aSessionToken, aStreamName)
         except:
             # ignore any error
             pass
 
+        try:
+            theStreamsDict = theSessionsService.getProperty(aSessionToken, "ClientIO_ClientIO.streams")
+        except:
+            theStreamsDict = {}
+            theSessionsService.setProperty(aSessionToken, "ClientIO_ClientIO.streams", theStreamsDict)
+
         theStream = xmlrpclib.Server(aStreamAddress, allow_none=True)
         theStream.ping(aReverseToken)
         
-        theSessionsService.setProperty(aSessionToken, theStreamName, ClientIOStream( aReverseToken, theStream))
+        theStreamsDict[aStreamName] = ClientIOStream( aReverseToken, theStream)
         
     def unregister(self, aSessionToken, aStreamName):
         '''
@@ -97,17 +131,15 @@ class ClientIO(Service):
         @raise KeyError: if aStreamName is not a valid stream identifier
         '''
         
-        theStreamName = "ClientIO_ClientIO.streams.%s"%aStreamName
-        theSessionsService = self._factory.instance('Sessions')
+        theSessionsService = self._broker.Sessions
+        theStreamsDict = theSessionsService.getProperty(aSessionToken, "ClientIO_ClientIO.streams", {})
         
         try:
-            theSessionsService.getProperty(aSessionToken, theStreamName, None).close()
+            theStreamsDict.pop(aStreamName, None).close()
         except:
             # ignore any error
             pass
             
-        theSessionsService.delProperty(aSessionToken, theStreamName)
-        
     def getStreamInfo(self, aSessionToken, aStreamName):
         '''
         Return the repr() string for the stream idenfitied by aStreamName
@@ -121,10 +153,9 @@ class ClientIO(Service):
         @raise KeyError: if aStreamName or aSessionToken are invalid
         '''
         
-        theStreamName = "ClientIO_ClientIO.streams.%s"%aStreamName
-        theSessionsService = self._factory.instance('Sessions')
+        theSessionsService = self._broker.Sessions
         
-        return repr(theSessionsService.getProperty(aSessionToken, theStreamName))
+        return repr(theSessionsService.getProperty(aSessionToken, "ClientIO_ClientIO.streams")[aStreamName])
             
         
     def getStream(self, aSessionToken, aStreamName):
@@ -138,10 +169,9 @@ class ClientIO(Service):
         @rtype: ClientIOStream
         '''
         
-        theStreamName = "ClientIO_ClientIO.streams.%s"%aStreamName
-        theSessionsService = self._factory.instance('Sessions')
+        theSessionsService = self._broker.Sessions
         
-        return theSessionsService.getProperty(aSessionToken, theStreamName)
+        return theSessionsService.getProperty(aSessionToken, "ClientIO_ClientIO.streams")[aStreamName]
     
     def printTo(self, aSessionToken, aStreamName, aMessage):
         '''

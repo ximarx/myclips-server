@@ -20,11 +20,11 @@ class RemoteShell(Service):
         
     def getShell(self, aSessionToken):
         
-        theSessionsService = self._factory.instance('Sessions')
+        theSessionsService = self._broker.Sessions
         theShell = theSessionsService.getProperty(aSessionToken, 'RemoteShell_MyClipsShell.shell', None) 
         if theShell is None:
             
-            theEngineService = self._factory.instance('Engine')
+            theEngineService = self._broker.Engine
             theNetwork = theEngineService.getNetwork(aSessionToken)
             theShell = Interpreter(theNetwork, None)
             theSessionsService.setProperty(aSessionToken, 'RemoteShell_MyClipsShell.shell', theShell)
@@ -48,7 +48,7 @@ class RemoteShell(Service):
         
         assert isinstance(theShell, Interpreter)
         
-        theRegistryService = self._factory.instance('Registry')
+        theRegistryService = self._broker.Registry
         
         return theRegistryService.toSkeleton(theShell.evaluate(aCommand))
         

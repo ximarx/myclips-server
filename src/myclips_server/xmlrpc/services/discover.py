@@ -73,9 +73,8 @@ def discover(pathlist=None, manifestFile=None, basePackage="myclips_server.xmlrp
                 
                 try:
                     theModuleObject = importlib.import_module(theModuleComplete)
-                except ImportError, e:
+                except ImportError:
                     # if error ignore this module
-                    print e
                     continue
                 else:
                     for theName, theClass in [(x,y) for (x,y) in inspect.getmembers(theModuleObject) if isinstance(y, type)]:

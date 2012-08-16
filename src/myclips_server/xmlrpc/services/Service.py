@@ -6,7 +6,7 @@ Created on 15/lug/2012
 
 class Service(object):
     '''
-    classdocs
+    Base class for myclips-xmlrpc-server services
     '''
 
     _TYPE = "Service"
@@ -20,6 +20,16 @@ class Service(object):
         self._broker = None
         
     def _onInitCompleted(self):
+        pass
+    
+    def onSessionDestroy(self, aSessionToken):
+        '''
+        Called by the Sessions service to notify other services
+        about session's destroy() method call
+        
+        This hook should be used for any kind of
+        resource cleanup
+        '''
         pass
         
     def setBroker(self, theBroker):

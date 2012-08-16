@@ -5,6 +5,11 @@ Created on 10/lug/2012
 '''
 import inspect
 import traceback
+from myclips_server.xmlrpc.services.sessions.Sessions import InvalidSessionError
+from xmlrpclib import Fault
+from myclips_server import MyClipsServerException, MyClipsServerFault
+from myclips.MyClipsException import MyClipsException
+import myclips_server
 
 class Broker(object):
     '''
@@ -30,6 +35,9 @@ class Broker(object):
             Service.setBroker(self)
             setattr(self, sKey, Service)
             
+    def __getattr__(self, name):
+        raise myclips_server.ServiceNotFoundFault('Invalid service "%s"' % name)
+            
     def _dispatch(self, methodName, args):
         
         if methodName is Broker.__API__:
@@ -42,23 +50,43 @@ class Broker(object):
         
         theObj = self._services[theService]
         
-        for part in parts:
-            
-            theAPIs = theObj.__API__ if hasattr(theObj, "__API__") else [x for x in dir() if x[0] != '_']
-            
-            if part in theAPIs:
-                theObj = getattr(theObj, part)
-            else:
-                raise Exception('property "%s" is not supported' % methodName)    
-            
         try:
-            return theObj(*args)
-        except:
-            print "Request:\n\tMethod-Name: %s\n\tArgs: %s"%(methodName, args)
-            print
-            traceback.print_exc()
-            print "---------------------"
+            for part in parts:
+                
+                theAPIs = theObj.__API__ if hasattr(theObj, "__API__") else [x for x in dir() if x[0] != '_']
+                
+                if part in theAPIs:
+                    theObj = getattr(theObj, part)
+                else:
+                    raise MyClipsServerFault('property "%s" is not supported' % methodName, code=1999)    
+        
+            # log a requests    
+            returnValue = theObj(*args)
+            myclips_server.logger.info("Request:\n\tMethod-Name: %s\n\tArgs: %s", methodName, args)
+            myclips_server.logger.debug("Response:\n\t%s", repr(returnValue))
+            return returnValue
+        
+        except MyClipsServerFault, e:
+            myclips_server.logger.warning("Request:\n\tMethod-Name: %s\n\tArgs: %s\n\tException: %s\n\t\t%s", 
+                                          methodName, 
+                                          args, 
+                                          e.__class__.__name__, 
+                                          e.message)
             raise
+        except Exception, e:
+            myclips_server.logger.error("Request:\n\tMethod-Name: %s\n\tArgs: %s\n\n%s\n--------------",
+                                          methodName, 
+                                          args,
+                                          traceback.format_exc())
+            
+            # convert the unexpected exception into a Fault
+            # and hide trace informations 
+            if isinstance(e, MyClipsServerException):
+                raise MyClipsServerFault(e.message, 1003)
+            elif isinstance(e, MyClipsException):
+                raise MyClipsServerFault(e.message, 1004)
+            else:
+                raise MyClipsServerFault(str(e))
         
 
     def services(self):

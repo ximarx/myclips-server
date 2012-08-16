@@ -6,15 +6,27 @@ Created on 13/ago/2012
 from myclips_server.xmlrpc.Broker import Broker
 import myclips_server.xmlrpc.services as services
 from myclips_server.xmlrpc.server import MyClipsDocXMLRPCServer
+import myclips_server
 
 
 def main():
     
+    bindAddress = myclips_server.CONFIGURATIONS.get('myclips_server', {}).get('bind-address', 'localhost')
+    bindPort = myclips_server.CONFIGURATIONS.get('myclips_server', {}).get('bind-port', 'localhost')
+    logRequests = myclips_server.CONFIGURATIONS.get('myclips_server', {}).get('log-requests', True)
     
+    server = MyClipsDocXMLRPCServer((bindAddress, bindPort), allow_none=True, logRequests=logRequests)
     
-    server = MyClipsDocXMLRPCServer(('localhost', 8081), allow_none=True)
+    servicesConf = myclips_server.CONFIGURATIONS.get('myclips_server', {}).get('services', [])
     
-    server.register_introspection_functions()
+    if isinstance(servicesConf, list):
+        for index, serviceName in enumerate(services):
+            servicesConf[index] = services.factory.instance(serviceName)
+    elif isinstance(servicesConf, dict):
+        for (serviceKey, serviceName) in servicesConf.items():
+            servicesConf[serviceKey] = services.factory.instance(serviceName)
+    
+    #server.register_introspection_functions()
     
 #    broker = Broker({
 #        "RULES"
@@ -27,15 +39,7 @@ def main():
 #            : Services.SessionsManager()
 #    })
 
-    broker = Broker(services=[
-            services.factory.instance('Registry'),                              
-            services.factory.instance('Sessions'),
-            services.factory.instance('ClientIO'),
-            services.factory.instance('Engine'),
-            services.factory.instance('RemoteShell'),
-            services.factory.instance('Types'),
-            services.factory.instance('AdminServices'),
-    ])
+    broker = Broker(services=servicesConf)
     
     server.register_instance(broker)
     

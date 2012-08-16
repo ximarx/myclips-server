@@ -1,13 +1,20 @@
 {
-	"xmlrpc-server": {
+	"myclips_server": {
 		"bind-address": "localhost",
 		"bind-port": 8081,
 		"log-requests": true,
-		"log-level": 0
+		"log-level": 10,
+		"services": {
+			"Registry":			"Registry_Registry",
+			"Sessions":			"Sessions_Sessions",
+			"ClientIO":			"ClientIO_ClientIO",
+			"RemoteShell": 		"RemoteShell_MyClipsShell",
+			"AdminServices": 	"AdminServices_Services"
+		}
 	},
 	
 	"myclips": {
-		"log-level": 0,
+		"log-level": 10,
 		"search-paths": [
 			"../../myclips", "../../../myclips", "../myclips", "../lib/myclips",
 			"../../myclips/src/", "../../../myclips/src/", "../myclips/src", "../lib/myclips/src"

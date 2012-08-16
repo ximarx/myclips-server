@@ -7,6 +7,7 @@ from myclips_server.xmlrpc.services.Service import Service
 import time
 import uuid
 import threading
+from myclips_server import MyClipsServerFault
 
 class Sessions(Service):
     '''
@@ -64,6 +65,11 @@ class Sessions(Service):
         """
         with self._lock:
             try:
+                for serviceName in self._factory.services():
+                    try:
+                        self._factory.instance(serviceName).onSessionDestroy(aSessionToken)
+                    except:
+                        pass
                 del self._sessions[aSessionToken]
                 return True
             except:
@@ -138,8 +144,11 @@ class Sessions(Service):
         @rtype: Session
         @raise KeyError: if aSessionToken is invalid
         """
-        with self._lock:
-            return self._sessions[aSessionToken]
+        try:
+            with self._lock:
+                return self._sessions[aSessionToken]
+        except KeyError:
+            raise InvalidSessionError("Invalid token: %s"%aSessionToken)
     
     def _generateToken(self):
         """
@@ -151,6 +160,10 @@ class Sessions(Service):
             aToken = str(uuid.uuid4())
         return aToken
         
+    
+class InvalidSessionError(MyClipsServerFault):
+    def __init__(self, message="", *args, **kwargs):
+        MyClipsServerFault.__init__(self, message=message, code=1002, *args, **kwargs)
     
         
 class Session(object):
