@@ -5,6 +5,8 @@ Created on 13/ago/2012
 '''
 from myclips_server.xmlrpc.services.Service import Service
 from myclips.rete.Network import Network
+from myclips_server import MyClipsServerException, InvalidArgTypeError
+import myclips_server.xmlrpc.services.types.skeletons as skeletons
 
 class Engine(Service):
     '''
@@ -13,7 +15,14 @@ class Engine(Service):
 
     _TYPE = "Engine"
     _NAME = "Engine_MyClips"
-    __API__ = ['ping']
+    __API__ = ['ping', 
+               # Construct creation api
+               'addConstruct', 'addDefRule', 'addDefFacts',  
+               'addDefModule', 'addDefGlobal', 'addDefTemplate',
+               # WM manipulation 
+               'assertFact', 'retractFact', 'retractFactId'
+               # WM query
+               'getFact', 'getFacts']
     
     def getNetwork(self, aSessionToken):
         
@@ -64,7 +73,7 @@ class Engine(Service):
                             # ... otherwise try to bind to a previous bound resource
                             resources[resourceName] = resources[otherResourceAlternative]
                         except:
-                            # the previous bound resource is not avaialble, use the suppressor
+                            # the previous bound resource is not availalble, use the suppressor
                             resources[resourceName] = suppressor
 
             #---- Create the instance of Network for the client ----#
@@ -75,6 +84,139 @@ class Engine(Service):
             theSessionsService.setProperty(aSessionToken, 'Engine_MyClips.network', theNetwork)
             
         return theNetwork
+    
+
+    _CONSTRUCT_HANDLER_MAP_ = {
+        'myclips.parser.Types.DefRuleConstruct' : 'addDefRule',
+        'myclips.parser.Types.DefModuleConstruct' : 'addDefModule',
+        'myclips.parser.Types.DefFactsConstruct' : 'addDefFacts',
+        'myclips.parser.Types.DefGlobalConstruct' : 'addDefGlobal',
+        'myclips.parser.Types.DefTemplateConstruct' : 'addDefTemplate',
+    }
+    
+    def addConstruct(self, aSessionToken, aConstructSkeleton):
+        
+        theRegistryService = self._factory.instance('Registry')
+        
+        for (theType, theHandler) in self._CONSTRUCT_HANDLER_MAP_.items():
+            if theRegistryService.isA(aConstructSkeleton, theType):
+                return getattr(self, theHandler)(aSessionToken, aConstructSkeleton)
+            
+            
+        raise MyClipsServerException("Invalid <aConstructSkeleton> type")
+        
+        
+    def addDefRule(self, aSessionToken, aRuleSkeleton):
+        
+        theNetwork = self.getNetwork(aSessionToken)
+        theRegistryService = self._factory.instance('Registry')
+        
+        if theRegistryService.isA(aRuleSkeleton, skeletons.DefRuleConstruct.__CLASS__):
+            
+            aDefRule = theRegistryService.toConcrete(aSessionToken, aRuleSkeleton)
+            theNetwork.addRule(aDefRule)
+            return True
+        
+        else:
+            raise InvalidArgTypeError("addDefRule", 2, skeletons.DefRuleConstruct.sign(), repr(aRuleSkeleton))
+            
+        
+    
+    def addDefModule(self, aSessionToken, aModuleSkeleton):
+
+        theRegistryService = self._factory.instance('Registry')
+        
+        if theRegistryService.isA(aModuleSkeleton, skeletons.DefModuleConstruct.__CLASS__):
+            
+            # toConcrete create a types.DefModuleConstruct object
+            # and its constructor take care of module insertion in Network
+            theRegistryService.toConcrete(aSessionToken, aModuleSkeleton)
+            return True
+        
+        else:
+            raise InvalidArgTypeError("addDefModule", 2, skeletons.DefModuleConstruct.sign(), repr(aModuleSkeleton))
+
+    
+    def addDefFacts(self, aSessionToken, aDeffactsSkeleton):
+
+        theNetwork = self.getNetwork(aSessionToken)
+        theRegistryService = self._factory.instance('Registry')
+        
+        if theRegistryService.isA(aDeffactsSkeleton, skeletons.DefFactsConstruct.__CLASS__):
+            
+            aDefRule = theRegistryService.toConcrete(aSessionToken, aDeffactsSkeleton)
+            theNetwork.addRule(aDefRule)
+            return True
+        
+        else:
+            raise InvalidArgTypeError("addDefFacts", 2, skeletons.DefFactsConstruct.sign(), repr(aDeffactsSkeleton))
+
+    
+    def addDefGlobal(self, aSessionToken, aDefglobalSkeleton):
+
+        theRegistryService = self._factory.instance('Registry')
+        
+        if theRegistryService.isA(aDefglobalSkeleton, skeletons.DefGlobalConstruct.__CLASS__):
+            
+            # toConcrete create a types.DefGlobalConstruct object
+            # and its constructor take care of module insertion in Network
+            theRegistryService.toConcrete(aSessionToken, aDefglobalSkeleton)
+            return True
+        
+        else:
+            raise InvalidArgTypeError("addDefGlobal", 2, skeletons.DefGlobalConstruct.sign(), repr(aDefglobalSkeleton))
+
+    
+    def addDefTemplate(self, aSessionToken, aDefTemplateSkeleton):
+        theRegistryService = self._factory.instance('Registry')
+        
+        if theRegistryService.isA(aDefTemplateSkeleton, skeletons.DefTemplateConstruct.__CLASS__):
+            
+            # toConcrete create a types.DefTemplateConstruct object
+            # and its constructor take care of module insertion in Network
+            theRegistryService.toConcrete(aSessionToken, aDefTemplateSkeleton)
+            return True
+        
+        else:
+            raise InvalidArgTypeError("addDefTemplate", 2, skeletons.DefTemplateConstruct.sign(), repr(aDefTemplateSkeleton))
+
+    def addDefFunction(self, aSessionToken, aDefFunctionSkeleton):
+        theRegistryService = self._factory.instance('Registry')
+        
+        if theRegistryService.isA(aDefFunctionSkeleton, skeletons.DefFunctionConstruct.__CLASS__):
+            
+            # toConcrete create a types.DefTemplateConstruct object
+            # and its constructor take care of module insertion in Network
+            theRegistryService.toConcrete(aSessionToken, aDefFunctionSkeleton)
+            return True
+        
+        else:
+            raise InvalidArgTypeError("addDefFunction", 2, skeletons.DefFunctionConstruct.sign(), repr(aDefFunctionSkeleton))
+
+    
+    def assertFact(self, aSessionToken, aFactSkeleton):
+        pass
+    
+    def retractFact(self, aSessionToken, aFactSkeleton):
+        pass
+
+    def retractFactId(self, aSessionToken, aFactId):
+        pass
+    
+    def getFact(self, aSessionToken, aFactId):
+        pass
+    
+    def getFacts(self, aSessionToken, moduleName=None):
+        pass
+    
+    def clear(self, aSessionToken):
+        pass
+        
+    def reset(self, aSessionToken):
+        pass
+    
+    def run(self, aSessionToken, steps=None):
+        pass
     
     
 class SuppressStream(object):

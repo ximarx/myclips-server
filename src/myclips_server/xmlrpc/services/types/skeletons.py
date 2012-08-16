@@ -473,3 +473,18 @@ class OrderedPatternCE(Skeleton):
         "constraints" : None
     }
 
+class Fact(Skeleton):
+    __CLASS__ = 'myclips.Fact.Fact'
+    __PROPERTIES__ = {
+        'templateName' : None,
+        'moduleName' : None,
+        'values' : None
+    }
+
+class WME(Skeleton):
+    __CLASS__ = 'myclips.rete.WME.WME'
+    __PROPERTIES__ = {
+        'factId' : None,
+        'fact' : None
+    }
+

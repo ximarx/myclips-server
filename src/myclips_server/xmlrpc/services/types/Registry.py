@@ -9,13 +9,14 @@ from myclips_server.xmlrpc.services.types import skeletons
 import importlib
 import myclips.parser.Types as types
 from myclips.rete.Network import Network
+import myclips_server
 
 
 class Registry(Service):
     
     _TYPE = "Registry"
     _NAME = "Registry_Registry"
-    __API__ = ['ping', 'new', 'getSkeletons', 'concretize']
+    __API__ = ['ping', 'new', 'getSkeletons', 'isSkeleton']
     
     default = None
     
@@ -38,8 +39,21 @@ class Registry(Service):
         if len(args) > 0 and isinstance(args[0], dict) and len(kwargs) == 0:
             kwargs = args[0]
             args = args[1:]
-        
-        return self._skeletons[theType].new(*args, **kwargs)
+            
+        try:
+            return self._skeletons[theType].new(*args, **kwargs)
+        except KeyError:
+            # the exact theType can't be found,
+            # i try to resolve using last part only
+            theType = theType.split('.')
+            alternatives = []
+            for aKey in self.getSkeletons():
+                if aKey.split('.')[-len(theType):None] == theType:
+                    alternatives.append(aKey)
+            if len(alternatives) == 1:
+                return self._skeletons[alternatives[0]].new(*args, **kwargs)
+            else:
+                raise
     
     def addSkeleton(self, aSkeleton):
         assert issubclass(aSkeleton, Skeleton)
@@ -56,14 +70,14 @@ class Registry(Service):
             # iterate items
             for (index, item) in enumerate(aPropValue):
                 try:
-                    aPropValue[index] = self._tryReplace(item)
+                    aPropValue[index] = self._tryReplace(aSessionToken, item)
                     needReturn = True
                 except NothingToReplaceException:
                     continue
                 
         elif isinstance(aPropValue, dict):
             # check if it's a skeleton
-            if aPropValue.has_key('class') and self._skeletons.has_key(aPropValue['class']):
+            if self.isSkeleton(aPropValue):
                 # it's a skeleton, convert it!
                 return self.toConcrete(aSessionToken, aPropValue)
             
@@ -81,8 +95,64 @@ class Registry(Service):
         else:
             raise NothingToReplaceException()
                         
-    def concretize(self, aSessionToken, aSkeleton):
-        return repr(self.toConcrete(aSessionToken, aSkeleton))
+    #def concretize(self, aSessionToken, aSkeleton):
+    #    return repr(self.toConcrete(aSessionToken, aSkeleton))
+    
+    def isSkeleton(self, aDict):
+        
+        return isinstance(aDict, dict) \
+                and aDict.has_key('class') \
+                and aDict.has_key('properties') \
+                and self._skeletons.has_key(aDict['class'])
+                
+                
+    def isA(self, aSkeleton, aSkeletonType):
+        
+        return self.isSkeleton(aSkeleton) \
+                and set(aSkeleton['properties'].keys()).issuperset( set(self._skeletons[aSkeletonType].__PROPERTIES__.keys()))
+        
+                
+    def toSkeleton(self, aSkeletonable):
+        
+        if isinstance(aSkeletonable, list):
+            
+            return [self.toSkeleton(x) for x in aSkeletonable]
+        
+        elif isinstance(aSkeletonable, dict):
+            
+            if self.isSkeleton(aSkeletonable):
+                return aSkeletonable
+            else:
+                return dict([ (aKey, self.toSkeleton(aValue)) for (aKey,aValue) in aSkeletonable.items()]) 
+            
+        else:
+            try:
+                theType = "%s.%s"%(aSkeletonable.__module__,aSkeletonable.__class__.__name__)
+                
+                if self._skeletons.has_key(theType):
+                    theSkeleton = self.new(theType)
+                    
+                    for aProp in theSkeleton['properties'].keys():
+                        if hasattr(aSkeletonable, aProp):
+                            anAttr = getattr(aSkeletonable, aProp)
+                            if callable(anAttr):
+                                continue
+                            theSkeleton['properties'][aProp] = self.toSkeleton(anAttr)
+                    
+                    return theSkeleton
+                            
+                else:
+                    myclips_server.logger.warning("Not convertible: %s\n\t%s", theType, repr(aSkeletonable))
+                    # unconvertible
+                    return aSkeletonable
+            except:
+                
+                myclips_server.logger.debug("Used as base-type: %s", repr(aSkeletonable))
+                
+                # for base types an exception is raised by .__module__
+                return aSkeletonable
+
+        
 
     def toConcrete(self, aSessionToken, aSkeleton):
         
@@ -105,14 +175,11 @@ class Registry(Service):
         if issubclass(theClass, types.HasScope):
             # need to fetch the modulesManager linked to the network from the session
             theEngineService = self._factory.instance('Engine')
-            print theEngineService 
             theNetwork = theEngineService.getNetwork(aSessionToken)
                 
             assert isinstance(theNetwork, Network)
             aSkeleton['properties']['modulesManager'] = theNetwork.modulesManager
             
-        print "TheClass: ", theClass
-        print "__init__ params: ", aSkeleton['properties']
 
         return theClass(**aSkeleton['properties'])
             

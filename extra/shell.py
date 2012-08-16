@@ -30,6 +30,7 @@ def myself():
 pp = pprint.pprint
 
 s = gs()
+
 aToken = s.Sessions.new()
 
 def linkStream():
@@ -47,6 +48,28 @@ def tryDraw():
     
     s.RemoteShell.do(aToken, '(defrule r (A B C) =>)')
     s.RemoteShell.do(aToken, '(draw-circuit nil r)')
+    
+def tryAddRule():
+    return s.Engine.addDefRule(aToken, 
+                        s.Registry.new('DefRuleConstruct', 
+                                       {
+                                            'defruleName': 'BLABLA', 
+                                            'lhs': [
+                                                s.Registry.new('OrderedPatternCE', 
+                                                               {
+                                                                    'constraints': [
+                                                                        s.Registry.new('Symbol', {'content': 'A'})
+                                                                        ]
+                                                                })
+                                                ]
+                                        }))
+    
+    
+def tryAssertTemplate():
+    
+    pp(s.RemoteShell.do(aToken, '(deftemplate tmpl (slot A) (slot B))'))
+    pp(s.RemoteShell.do(aToken, '(assert (tmpl (A 10) (B 100)))'))
+    
     
 
 print "type:"

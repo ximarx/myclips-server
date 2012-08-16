@@ -13,6 +13,10 @@ class Skeleton(object):
     def __init__(self):
         pass
     
+    @classmethod
+    def sign(cls):
+        return "<Skeleton: %s>"%cls.__CLASS__
+    
     @property
     def theClass(self):
         return self.__class__.__CLASS__

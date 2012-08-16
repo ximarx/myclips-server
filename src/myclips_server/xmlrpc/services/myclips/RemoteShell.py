@@ -48,7 +48,9 @@ class RemoteShell(Service):
         
         assert isinstance(theShell, Interpreter)
         
-        return repr(theShell.evaluate(aCommand))
+        theRegistryService = self._factory.instance('Registry')
+        
+        return theRegistryService.toSkeleton(theShell.evaluate(aCommand))
         
         
     

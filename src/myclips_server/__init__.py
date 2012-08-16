@@ -76,6 +76,16 @@ from myclips.MyClipsException import MyClipsException
 class MyClipsServerException(MyClipsException):
     pass
 
+class InvalidArgTypeError(MyClipsServerException):
+    def __init__(self, funcName="", argNum=None, expectedSkeleton=None, foundClass=None, *args, **kwargs):
+        
+        message="Function %(funcName)s expects arguments #%(argNum)s to be a %(expected)s, but found %(found)s"%{
+                    'funcName' :    funcName,
+                    'argNum' :      str(argNum) if argNum is not None else "ALL",
+                    'expected' :    str(expectedSkeleton),
+                    'found':        str(foundClass)}
+        
+        MyClipsServerException.__init__(self, message=message, *args, **kwargs)
 
 def __replaceFuncs(_F_REPLACEMENTS):
 
