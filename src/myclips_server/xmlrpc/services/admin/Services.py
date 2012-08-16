@@ -13,7 +13,7 @@ class Services(Service):
 
     _NAME = "AdminServices_Services"
     _TYPE = "AdminServices"
-    __API__ = ["ping", "restart", "install", "replace", "remove", "refresh", "start"]
+    __API__ = Service.__API__ + ["restart", "install", "replace", "remove", "refresh", "start"]
     
     def start(self, aServiceName, asType=None):
         theService = self._factory.instance(aServiceName)

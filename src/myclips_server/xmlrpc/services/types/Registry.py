@@ -13,10 +13,15 @@ import myclips_server
 
 
 class Registry(Service):
+    """
+    Type Registry service:
+        provides api to create skeleton dict from
+        skeleton declaration and check if a dict is a Skeleton
+    """
     
     _TYPE = "Registry"
     _NAME = "Registry_Registry"
-    __API__ = ['ping', 'new', 'getSkeletons', 'isSkeleton']
+    __API__ = Service.__API__ + ['new', 'getSkeletons', 'isSkeleton', 'isA']
     
     def __init__(self, factory, theSkeletonModule=None):
         Service.__init__(self, factory)
@@ -33,6 +38,20 @@ class Registry(Service):
             self.addSkeleton(theSkeleton) 
     
     def new(self, theType, *args, **kwargs):
+        '''
+        Create a new Skeleton of type theType.
+        If an dict is used as second argument, in the dict are used in the
+        Skeleton instance initialization. Dict's values with a key that is
+        a valid skeleton properties are used as property value
+          
+        @param theType: a skeleton type name
+            If theType is not a registered skeleton, a skeleton name
+            that ends with theType will be used if a single similar
+            match is found
+        @type theType: string
+        @return: a Skeleton of type theType
+        @rtype: dict
+        '''
         
         if len(args) > 0 and isinstance(args[0], dict) and len(kwargs) == 0:
             kwargs = args[0]
@@ -54,13 +73,27 @@ class Registry(Service):
                 raise
     
     def addSkeleton(self, aSkeleton):
+        '''
+        Add a new skeleton in the list of registered skeletons
+        
+        @param aSkeleton: a new skeleton class
+        @type aSkeleton: Skeleton.__class__
+        '''
+        
         assert issubclass(aSkeleton, Skeleton)
         self._skeletons[aSkeleton.__CLASS__] = aSkeleton()
 
     def getSkeletons(self):
+        '''
+        Return the list of skeleton registered
+        '''
+        
         return self._skeletons.keys()
 
     def _tryReplace(self, aSessionToken, aPropValue ):
+        '''
+        Try to replace a value with a skeleton for the same type
+        '''
         
         needReturn = False
         
@@ -97,6 +130,12 @@ class Registry(Service):
     #    return repr(self.toConcrete(aSessionToken, aSkeleton))
     
     def isSkeleton(self, aDict):
+        '''
+        Check if a dict is a skeleton instance
+        
+        @param aDict: a dict to check
+        @type aDict: dict
+        '''
         
         return isinstance(aDict, dict) \
                 and aDict.has_key('class') \
@@ -105,12 +144,30 @@ class Registry(Service):
                 
                 
     def isA(self, aSkeleton, aSkeletonType):
+        '''
+        Check if a skeleton is of type aSkeletonType
+        
+        @param aSkeleton: a skeleton dict
+        @type aSkeleton: dict
+        @param aSkeletonType: a skeleton type name
+        @type aSkeletonType: string
+        '''
         
         return self.isSkeleton(aSkeleton) \
                 and set(aSkeleton['properties'].keys()).issuperset( set(self._skeletons[aSkeletonType].__PROPERTIES__.keys()))
         
                 
     def toSkeleton(self, aSkeletonable):
+        '''
+        Convert a value to its skeleton form (if possible)
+        lists and non-skeleton dicts values are converted too
+        
+        @param aSkeletonable: an object to convert
+        @type aSkeletonable: object
+        @return: a Skeleton for the object if possible
+            or the same object if can't be replaced
+        @rtype: object|dict
+        '''
         
         if isinstance(aSkeletonable, (list, tuple)):
             
@@ -153,6 +210,18 @@ class Registry(Service):
         
 
     def toConcrete(self, aSessionToken, aSkeleton):
+        '''
+        Convert a skeleton to its real object. the session token
+        is used to retrive parameters from the session if necessary
+        
+        @param aSessionToken: a token for a valid session
+        @type aSessionToken: string
+        @param aSkeleton: a skeleton instance to convert
+        @type aSkeleton: dict
+        @return: the converted object
+        @rtype: object
+        '''
+        
         
         theClass = aSkeleton['class']
         theModule = ".".join(theClass.split('.')[0:-1])
@@ -183,4 +252,9 @@ class Registry(Service):
             
         
 class NothingToReplaceException(Exception):
+    '''
+    Registry internal exception raised to notify
+    no value replacement while converting
+    concrete -> skeleton
+    '''
     pass

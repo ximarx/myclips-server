@@ -10,13 +10,25 @@ import myclips_server.xmlrpc.services.types.skeletons as skeletons
 
 class Engine(Service):
     '''
-    Bridge to the myclips.rete.Network api
+    MyClips inference engine service:
+        a bridge to the myclips.rete.Network api
+    
+        WARNING: output/input streams must be registered with
+            ClientIO service before any method of this service is called,
+            otherwise any input request will have EOF as return value
+            and any output will be suppressed.
+    
+    A good way to be sure that client streams are used
+    is to call .destroyNetwork after streams registration.
+    Then, any call to the Engine service will create a new
+    network to work with (and with streams registered)
+    
     '''
 
     _TYPE = "Engine"
     _NAME = "Engine_MyClips"
-    __API__ = ['ping', 
-               # Construct creation api
+    __API__ = Service.__API__ + [ 
+               # Network creation api
                'addConstruct', 'addDefRule', 'addDefFacts', 'addDefFunction', 
                'addDefModule', 'addDefGlobal', 'addDefTemplate',
                # WM manipulation 

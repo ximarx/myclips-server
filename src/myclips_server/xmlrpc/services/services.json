@@ -34,11 +34,5 @@
         "class": "Registry", 
         "module": "myclips_server.xmlrpc.services.types.Registry", 
         "name": "Registry_Registry"
-    }, 
-    {
-        "type": "Types", 
-        "class": "Types", 
-        "module": "myclips_server.xmlrpc.services.types.Types", 
-        "name": "Types_Types"
     }
 ]

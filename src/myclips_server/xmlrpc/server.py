@@ -7,6 +7,7 @@ from DocXMLRPCServer import XMLRPCDocGenerator, ServerHTMLDoc,\
     DocXMLRPCRequestHandler
 from SimpleXMLRPCServer import SimpleXMLRPCServer, resolve_dotted_attribute
 from myclips_server.xmlrpc.services.Service import Service
+import SocketServer
 
 class MyClipsXMLRPCDocGenerator(XMLRPCDocGenerator):
     
@@ -15,14 +16,17 @@ class MyClipsXMLRPCDocGenerator(XMLRPCDocGenerator):
         if isinstance(dotObject, Service) and hasattr(dotObject, '__API__'):
             iterateOver = dotObject.__API__
         else:
-            iterateOver = dir(dotObject) 
-        
-        for dotted in [x for x in iterateOver if x[0] != '_']:
-            objectAttr = getattr(dotObject, dotted)
-            if callable(objectAttr):
-                methodsDict[".".join([method_prefix, dotted]) if method_prefix != "" else dotted] = objectAttr
+            iterateOver = dir(dotObject)
+
+        for dotted in [x for x in iterateOver if x[0] != '_' or x == '__DOC__']:
+            if '__DOC__' == dotted:
+                methodsDict[".".join([method_prefix]) if method_prefix != "" else ""] = dotObject
             else:
-                self.recursive_find_methods(methodsDict, objectAttr, dotted)
+                objectAttr = getattr(dotObject, dotted)
+                if callable(objectAttr):
+                    methodsDict[".".join([method_prefix, dotted]) if method_prefix != "" else dotted] = objectAttr
+                else:
+                    self.recursive_find_methods(methodsDict, objectAttr, dotted)
     
     def generate_html_documentation(self):
         """generate_html_documentation() => html documentation for the server
@@ -79,7 +83,10 @@ class MyClipsXMLRPCDocGenerator(XMLRPCDocGenerator):
 
         return documenter.page(self.server_title, documentation)    
 
-class MyClipsDocXMLRPCServer(  SimpleXMLRPCServer,
+class MyClipsXMLRPCServer(SocketServer.ThreadingMixIn,SimpleXMLRPCServer): 
+    pass
+
+class MyClipsDocXMLRPCServer(  MyClipsXMLRPCServer,
                         MyClipsXMLRPCDocGenerator):
     """XML-RPC and HTML documentation server.
 
@@ -90,7 +97,7 @@ class MyClipsDocXMLRPCServer(  SimpleXMLRPCServer,
     def __init__(self, addr, requestHandler=DocXMLRPCRequestHandler,
                  logRequests=1, allow_none=False, encoding=None,
                  bind_and_activate=True):
-        SimpleXMLRPCServer.__init__(self, addr, requestHandler, logRequests,
+        MyClipsXMLRPCServer.__init__(self, addr, requestHandler, logRequests,
                                     allow_none, encoding, bind_and_activate)
         MyClipsXMLRPCDocGenerator.__init__(self)
 

@@ -5,8 +5,6 @@ Created on 10/lug/2012
 '''
 import inspect
 import traceback
-from myclips_server.xmlrpc.services.sessions.Sessions import InvalidSessionError
-from xmlrpclib import Fault
 from myclips_server import MyClipsServerException, MyClipsServerFault
 from myclips.MyClipsException import MyClipsException
 import myclips_server
@@ -40,7 +38,7 @@ class Broker(object):
             
     def _dispatch(self, methodName, args):
         
-        if methodName is Broker.__API__:
+        if methodName in Broker.__API__:
             return getattr(self, methodName)(*args)
         
         parts = methodName.split(".")
@@ -117,33 +115,18 @@ class Broker(object):
             [funcName, [funcArg1, funcArg2, .. , funcArgN]]
         for each function
         
-        @param aServiceId: the name of a registered service
-        @type aServiceId: string
+        @param aServiceName: the name of a registered service
+        @type aServiceName: string
         @return: a list of nested list (1 for each function)
         @rtype: list
         
         """
         theService = self._services[aServiceId]
-        iterateOver = theService.__APIS__ if hasattr(theService, '__APIS__') else dir(theService)
+        iterateOver = theService.__API__ if hasattr(theService, '__API__') else dir(theService)
         return [
                 [
                  ".".join([aServiceId, func]), #SERVICENAME.func
                  Broker._vectorizeArgs(getattr(self._services[aServiceId], func))
                 ] 
-                for func in iterateOver if func[0] != '_'# and callable(getattr(theService, func))
+                for func in iterateOver if func != '__repr__' and func != '__DOC__' 
             ]
-
-#    def parseProduction(self, defrule):
-#        parsedItems = clipsparser.parse(defrule)
-#        
-#        rule = parsedItems[0][1]
-#        default_rule = {'name': '', 'lhs': [], 'rhs': [], 'declare': {'salience': 0}, 'description': ''}
-#        default_rule.update(rule)
-#        rule = default_rule
-#        p = Production(rule['name'], rule['lhs'], rule['rhs'], rule['declare'], rule['description'])
-#        MyClipsWrapper.i().rete.add_production(p)
-#        
-#
-#    def assert_fact(self, *args, **kargs):
-#        MyClipsWrapper.i().rete.assert_fact(*args, **kargs)
-

@@ -1,4 +1,4 @@
-//:~ MyCLIPS-Server services discovery report:  Thu Aug 16 16:49:02 2012
+//:~ MyCLIPS-Server services discovery report:  Thu Aug 16 19:39:10 2012
 
 myclips_server.xmlrpc.services
 	|--- .Service
@@ -21,12 +21,10 @@ myclips_server.xmlrpc.services.types
 	|--- .Registry
 	:   	|--- .Registry (Registry : Registry_Registry)
 	|--- .Skeleton
-	|--- .Types
-	:   	|--- .Types (Types : Types_Types)
 	|--- .skeletons
 
 ================================
-Number of types: 7
+Number of types: 6
   |- Engine:
   :   |- Engine_MyClips
   |- RemoteShell:
@@ -39,11 +37,9 @@ Number of types: 7
   :   |- AdminServices_Services
   |- Registry:
   :   |- Registry_Registry
-  |- Types:
-  :   |- Types_Types
 
-Number of services: 7
+Number of services: 6
 
 ================================
 
-//:~  Thu Aug 16 16:49:02 2012
+//:~  Thu Aug 16 19:39:11 2012

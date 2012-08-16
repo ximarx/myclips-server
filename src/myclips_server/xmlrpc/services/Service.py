@@ -11,6 +11,7 @@ class Service(object):
 
     _TYPE = "Service"
     _NAME = "Service_Service"
+    __API__ = ['ping', '__repr__', '__DOC__']
 
     def __init__(self, factory):
         '''
@@ -18,6 +19,9 @@ class Service(object):
         '''
         self._factory = factory
         self._broker = None
+        
+    def __repr__(self):
+        return "<Service: %s>"%self._NAME
         
     def _onInitCompleted(self):
         pass
@@ -35,13 +39,18 @@ class Service(object):
     def setBroker(self, theBroker):
         self._broker = theBroker
         
-    def ping(self, aSession=None):
+    def ping(self, aSessionToken=None):
         """
         Check if service is available for the session aSession
+        If no Sessions service is installed, ping always return "PONG!"
         
-        @param aSessions: an optional session Token from the Sessions service
-        @type aSession: aSession skeleton
-        @return: "PONG" if service is available
-        @rtype: string
+        @param aSessionToken : an optional session Token from the Sessions service
+        @type aSessionToken : string
+        @return: "PONG!" if service is available, False otherwise
+        @rtype: boolean|"PONG!"
         """
-        return "PONG"
+        
+        try:
+            return "PONG!" if self._broker.Sessions.isValid(aSessionToken) else False
+        except:
+            return "PONG!"

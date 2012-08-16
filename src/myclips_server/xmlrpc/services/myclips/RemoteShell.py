@@ -8,12 +8,20 @@ from myclips.shell.Interpreter import Interpreter
 
 class RemoteShell(Service):
     '''
-    classdocs
+    MyClips RemoteShell service:
+        allow to execute "CLIPS commands" over a Network Instance
+        
+        For documentation about allowed commands, use the MyClips's Shell documentation.
+        
+        WARNING: output/input streams must be registered with
+            ClientIO service before any method of this service is called,
+            otherwise any input request will have EOF as return value
+            and any output will be suppressed
     '''
     
     _NAME = 'RemoteShell_MyClipsShell'
     _TYPE = 'RemoteShell'
-    __API__=['do']
+    __API__ = Service.__API__ + ['do']
 
     def __init__(self, factory):
         Service.__init__(self, factory)

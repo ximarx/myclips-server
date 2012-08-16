@@ -45,7 +45,7 @@ class ClientIO(Service):
     
     _TYPE = "ClientIO"
     _NAME = "ClientIO_ClientIO"
-    __API__= ['register', 'unregister', 'getStreamInfo', 'printTo', 'getStreamNames']
+    __API__= Service.__API__ + ['register', 'unregister', 'getStreamInfo', 'printTo', 'getStreamNames', '__DOC__']
 
 
     def onSessionDestroy(self, aSessionToken):
@@ -84,7 +84,7 @@ class ClientIO(Service):
         
         The registration protocol requires the client end-point to
         reply to a <client-end-point>.ping(aReverseToken) method call
-        before the registration will be completed
+        before the registration is completed
         
         @param aSessionToken: a token for a valid session
         @type aSessionToken: string
