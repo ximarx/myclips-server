@@ -100,7 +100,8 @@ class Sessions(Service):
         @type aProperty: string
         @return: the property value or None if property is not set
         @rtype: mixed|None
-        @raise KeyError: if aSessionToken is invalid
+        @raise KeyError: if property name is missing
+        @raise InvalidSessionError: if aSessionToken is not valid
         """
         if len(args):
             return self.get(aSessionToken).getProperty(aProperty, args[0])

@@ -10,6 +10,7 @@
 			"ClientIO":			"ClientIO_ClientIO",
 			"Engine": 			"Engine_MyClips",
 			"RemoteShell": 		"RemoteShell_MyClipsShell",
+			"ClientEvents":		"ClientEvents_MyClipsEvents",
 			"AdminServices": 	"AdminServices_Services"
 		}
 	},

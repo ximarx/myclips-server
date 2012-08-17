@@ -6,6 +6,12 @@
         "name": "AdminServices_Services"
     }, 
     {
+        "type": "ClientEvents", 
+        "class": "ClientEvents", 
+        "module": "myclips_server.xmlrpc.services.clientevents.ClientEvents", 
+        "name": "ClientEvents_MyClipsEvents"
+    }, 
+    {
         "type": "ClientIO", 
         "class": "ClientIO", 
         "module": "myclips_server.xmlrpc.services.clientio.ClientIO", 

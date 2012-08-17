@@ -1,4 +1,4 @@
-//:~ MyCLIPS-Server services discovery report:  Thu Aug 16 19:39:10 2012
+//:~ MyCLIPS-Server services discovery report:  Fri Aug 17 09:19:27 2012
 
 myclips_server.xmlrpc.services
 	|--- .Service
@@ -6,6 +6,9 @@ myclips_server.xmlrpc.services
 myclips_server.xmlrpc.services.admin
 	|--- .Services
 	:   	|--- .Services (AdminServices : AdminServices_Services)
+myclips_server.xmlrpc.services.clientevents
+	|--- .ClientEvents
+	:   	|--- .ClientEvents (ClientEvents : ClientEvents_MyClipsEvents)
 myclips_server.xmlrpc.services.clientio
 	|--- .ClientIO
 	:   	|--- .ClientIO (ClientIO : ClientIO_ClientIO)
@@ -24,7 +27,7 @@ myclips_server.xmlrpc.services.types
 	|--- .skeletons
 
 ================================
-Number of types: 6
+Number of types: 7
   |- Engine:
   :   |- Engine_MyClips
   |- RemoteShell:
@@ -33,13 +36,15 @@ Number of types: 6
   :   |- ClientIO_ClientIO
   |- Sessions:
   :   |- Sessions_Sessions
+  |- ClientEvents:
+  :   |- ClientEvents_MyClipsEvents
   |- AdminServices:
   :   |- AdminServices_Services
   |- Registry:
   :   |- Registry_Registry
 
-Number of services: 6
+Number of services: 7
 
 ================================
 
-//:~  Thu Aug 16 19:39:11 2012
+//:~  Fri Aug 17 09:19:28 2012
