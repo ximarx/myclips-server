@@ -157,13 +157,15 @@ class Registry(Service):
                 and set(aSkeleton['properties'].keys()).issuperset( set(self._skeletons[aSkeletonType].__PROPERTIES__.keys()))
         
                 
-    def toSkeleton(self, aSkeletonable):
+    def toSkeleton(self, aSkeletonable, forceUncovertibleToRepr=False):
         '''
         Convert a value to its skeleton form (if possible)
         lists and non-skeleton dicts values are converted too
         
         @param aSkeletonable: an object to convert
         @type aSkeletonable: object
+        @param forceUncovertibleToRepr: force a conversion to string using repr() for unconvertible objects
+        @type forceUncovertibleToRepr: boolean  
         @return: a Skeleton for the object if possible
             or the same object if can't be replaced
         @rtype: object|dict
@@ -178,7 +180,7 @@ class Registry(Service):
             if self.isSkeleton(aSkeletonable):
                 return aSkeletonable
             else:
-                return dict([ (aKey, self.toSkeleton(aValue)) for (aKey,aValue) in aSkeletonable.items()]) 
+                return dict([ (aKey, self.toSkeleton(aValue, forceUncovertibleToRepr)) for (aKey,aValue) in aSkeletonable.items()]) 
             
         else:
             try:
@@ -192,12 +194,15 @@ class Registry(Service):
                             anAttr = getattr(aSkeletonable, aProp)
                             if callable(anAttr):
                                 continue
-                            theSkeleton['properties'][aProp] = self.toSkeleton(anAttr)
+                            theSkeleton['properties'][aProp] = self.toSkeleton(anAttr, forceUncovertibleToRepr)
                     
                     return theSkeleton
                             
                 else:
-                    myclips_server.logger.warning("Not convertible: %s\n\t%s", theType, repr(aSkeletonable))
+                    if not forceUncovertibleToRepr:
+                        myclips_server.logger.warning("Not convertible: %s\n\t%s", theType, repr(aSkeletonable))
+                    else:
+                        aSkeletonable = repr(aSkeletonable)
                     # unconvertible
                     return aSkeletonable
             except:

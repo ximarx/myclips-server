@@ -11,20 +11,21 @@ def aStream():
     oFile = sys.stdout
     iFile = sys.stdin
     
-    fakeStdOut = SimpleXMLRPCServer(("localhost", 55555), allow_none=True, logRequests=False)    
+    fakeStdOut = SimpleXMLRPCServer(("localhost", 0), allow_none=True, logRequests=False)    
     fakeStdOut.register_function(lambda t: "pong", 'ping')    
-    fakeStdOut.register_function(lambda t,s: oFile.write("RPC: "+s) or True, 'write')
+    fakeStdOut.register_function(lambda t,s: oFile.write("RPC: "+s+"\n") or True, 'write')
     fakeStdOut.register_function(lambda *args: oFile.write("RPC: CLOSE!") or True, 'close')
     fakeStdOut.register_function(lambda t: oFile.write("RPC Input: ") or iFile.readline(), 'readline')
+    fakeStdOut.register_function(lambda t,en,*args: oFile.write("RPC Notify: [%s] %s\n"%(en, repr(args))) or True, 'notify')
     
     thread.start_new_thread(fakeStdOut.serve_forever, ())
+    
+    #return fakeStdOut.server_address
+    return "http://%s:%s"%tuple([str(x) for x in fakeStdOut.server_address]) 
 
 
 def gs():
     return xmlrpclib.Server('http://localhost:8081', allow_none=True, verbose=False)
-
-def myself():
-    return xmlrpclib.Server('http://localhost:55555', allow_none=True)
 
 
 pp = pprint.pprint
@@ -35,13 +36,17 @@ aToken = s.Sessions.new()
 
 def linkStream():
     
-    aStream()
+    aAddress = aStream()
     
-    s.ClientIO.register(aToken, "t", "http://localhost:55555", 324)
-    s.ClientIO.register(aToken, "stdout", "http://localhost:55555", 324)
-    s.ClientIO.register(aToken, "stdin", "http://localhost:55555", 324)
-    s.ClientIO.register(aToken, "wtrace", "http://localhost:55555", 324)
+    s.ClientIO.register(aToken, "t", aAddress, 324)
+    s.ClientIO.register(aToken, "stdout", aAddress, 324)
+    s.ClientIO.register(aToken, "stdin", aAddress, 324)
+    s.ClientIO.register(aToken, "wtrace", aAddress, 324)
     
+def linkListener():
+    
+    aAddress = aStream()
+    s.ClientEvents.register(aToken, "aListener%s"%aAddress, aAddress, 213, 'fact-retracted', 'fact-asserted', 'node-added' )
     
 def tryDraw():
     linkStream()

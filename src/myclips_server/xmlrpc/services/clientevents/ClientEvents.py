@@ -34,6 +34,13 @@ class ClientEvents(Service):
         
         
     def getListeners(self, aSessionToken):
+        '''
+        Get a dict of listeners for a session token
+        @param aSessionToken: a token for a valid session
+        @type aSessionToken: string
+        @return: a dict of all listeners registered
+        @rtype: dict
+        '''
         
         try:
             listeners = self._broker.Sessions.getProperty(aSessionToken, "ClientEvents_MyClipsEvents.listeners")
@@ -90,7 +97,7 @@ class ClientEvents(Service):
         theListener = xmlrpclib.Server(aListenerAddress, allow_none=True)
         theListener.ping(aReverseToken)
         
-        theListener = ClientListener(aReverseToken, theListener, list(eventsName))
+        theListener = ClientListener(aReverseToken, theListener, self, list(eventsName))
         
         theNetwork = self._broker.Engine.getNetwork(aSessionToken)
         theListener.install(theNetwork.eventsManager)
@@ -123,19 +130,28 @@ class ClientListener(EventsManagerListener):
     """
     Forwarder for a remove client listener
     """
-    def __init__(self, theReverseToken, theServer, theEvents=None):
+    def __init__(self, theReverseToken, theServer, theOwner, theEvents=None):
         self._theReverseToken = theReverseToken
         self._theServer = theServer
+        self._theOwner = theOwner
         EventsManagerListener.__init__(self, dict([ (aEvent, self.forward) for aEvent in (theEvents or []) ]))
         
     
     def forward(self, eventName, *args, **kwargs):
+        '''
+        Forward a notify call to the client listener add the reverse token arg
+        '''
+        args = [self._theOwner._broker.Registry.toSkeleton(x, True) for x in args]
+        kwargs = dict([(k, self._theOwner._broker.Registry.toSkeleton(x, True) ) for (k, x) in kwargs.items()])
         try:
             self._theServer.notify(self._theReverseToken, eventName, *args, **kwargs)
         except:
             myclips_server.logger.info("A listener could be not valid anymore: %s", self)
             
     def close(self):
+        '''
+        Notify client listener about link shotdown
+        '''
         try:
             self._theServer.close(self._theReverseToken)
         except:
