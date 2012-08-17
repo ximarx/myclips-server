@@ -95,14 +95,19 @@ class ClientEvents(Service):
             self.unregister(aSessionToken, aListenerName)
         
         theListener = xmlrpclib.Server(aListenerAddress, allow_none=True)
-        theListener.ping(aReverseToken)
         
-        theListener = ClientListener(aReverseToken, theListener, self, list(eventsName))
-        
-        theNetwork = self._broker.Engine.getNetwork(aSessionToken)
-        theListener.install(theNetwork.eventsManager)
+        try:
+            myclips_server.timeout_call(theListener.ping, 2, args=(aReverseToken))
+        except myclips_server.FunctionCallTimeout:
+            myclips_server.logger.info("...a ClientListener ping check took more than 2 seconds. Ignored!")
+        else:
+            theListener = ClientListener(aReverseToken, theListener, self, list(eventsName))
             
-        someListeners[aListenerName] = theListener
+            theNetwork = self._broker.Engine.getNetwork(aSessionToken)
+            theListener.install(theNetwork.eventsManager)
+                
+            someListeners[aListenerName] = theListener
+            
     
     def unregister(self, aSessionToken, aListenerName):
         '''
@@ -144,7 +149,9 @@ class ClientListener(EventsManagerListener):
         args = [self._theOwner._broker.Registry.toSkeleton(x, True) for x in args]
         kwargs = dict([(k, self._theOwner._broker.Registry.toSkeleton(x, True) ) for (k, x) in kwargs.items()])
         try:
-            self._theServer.notify(self._theReverseToken, eventName, *args, **kwargs)
+            myclips_server.timeout_call( self._theServer.notify, timeout=5, args=[eventName] + list(args), kwargs=kwargs)
+        except myclips_server.FunctionCallTimeout:
+            myclips_server.logger.info("...a listener forwarding took more than 5 second. Aborted")
         except:
             myclips_server.logger.info("A listener could be not valid anymore: %s", self)
             

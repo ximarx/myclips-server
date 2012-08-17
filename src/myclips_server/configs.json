@@ -33,5 +33,11 @@
 				"close"
 			]
 		}
+	},
+	
+	"services": {
+		"Sessions_Sessions": {
+			"session-life" : 15
+		}
 	}
 }

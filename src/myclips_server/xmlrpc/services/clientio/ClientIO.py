@@ -5,6 +5,8 @@ Created on 14/ago/2012
 '''
 from myclips_server.xmlrpc.services.Service import Service
 import xmlrpclib
+import myclips_server
+from myclips_server import FunctionCallTimeout
 
 class ClientIO(Service):
     '''
@@ -112,9 +114,13 @@ class ClientIO(Service):
             theSessionsService.setProperty(aSessionToken, "ClientIO_ClientIO.streams", theStreamsDict)
 
         theStream = xmlrpclib.Server(aStreamAddress, allow_none=True)
-        theStream.ping(aReverseToken)
-        
-        theStreamsDict[aStreamName] = ClientIOStream( aReverseToken, theStream)
+
+        try:
+            myclips_server.timeout_call(theStream.ping, 2, args=(aReverseToken))
+        except myclips_server.FunctionCallTimeout:
+            myclips_server.logger.info("...a ClientIOStream ping check took more than 2 seconds. Ignored!")
+        else:
+            theStreamsDict[aStreamName] = ClientIOStream( aReverseToken, theStream)
         
     def unregister(self, aSessionToken, aStreamName):
         '''
@@ -197,9 +203,13 @@ class ClientIOStream(object):
     def __getattr__(self, name):
         def __forward_call(*args, **kwargs):
             try:
-                return getattr(self._theServer, name)(self._theReverseToken, *args, **kwargs)
+                #return getattr(self._theServer, name)(self._theReverseToken, *args, **kwargs)
+                return myclips_server.timeout_call( getattr(self._theServer, name), timeout=60, args=[self._theReverseToken] + list(args), kwargs=kwargs) 
             except xmlrpclib.Fault:
                 return self._theServer.__call(self._theReverseToken, name, *args, **kwargs)
+            except FunctionCallTimeout:
+                myclips_server.logger.warning("...a ClientIOStream request took more than 60 seconds. Aborted")
+                raise IOError()
         
         return __forward_call
 

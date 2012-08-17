@@ -4,6 +4,7 @@ import sys
 import os
 import json
 from xmlrpclib import Fault
+import threading
 
 __author__  = "Francesco Capozzo <ximarx@gmail.com>"
 __status__  = "development"
@@ -100,6 +101,38 @@ class InvalidArgTypeError(MyClipsServerFault):
                     'found':        str(foundClass)}
         
         MyClipsServerFault.__init__(self, message=message, code=1001, *args, **kwargs)
+
+class FunctionCallTimeout(Exception):
+    pass
+
+def timeout_call(func, timeout=10, args=(), kwargs={}, forward_exc=False):
+    """This function will spawn a thread and run the given function
+    using the args, kwargs and return the given default value if the
+    timeout_duration is exceeded.
+    """ 
+    class InterruptableThread(threading.Thread):
+        def __init__(self):
+            self.result = None
+            threading.Thread.__init__(self)
+            
+            
+        def run(self):
+            try:
+                self.result = func(*args, **kwargs)
+            except:
+                if forward_exc:
+                    raise
+                else:
+                    pass
+            
+    it = InterruptableThread()
+    it.start()
+    it.join(timeout)
+    if it.isAlive():
+        raise FunctionCallTimeout()
+    else:
+        return it.result
+
 
 def __replaceFuncs(_F_REPLACEMENTS):
 

@@ -7,7 +7,8 @@ from myclips_server.xmlrpc.services.Service import Service
 import time
 import uuid
 import threading
-from myclips_server import MyClipsServerFault
+from myclips_server import MyClipsServerFault, MyClipsServerException
+import myclips_server
 
 class Sessions(Service):
     '''
@@ -18,12 +19,26 @@ class Sessions(Service):
     __API__ = ["ping", "new", "renew", "destroy",
                 'setProperty', "getProperty", "isValid"]
     
+    try:
+        _SESSION_LIFE = max([myclips_server.CONFIGURATIONS['services']['Sessions_Sessions']['session-life'], 10])
+    except:
+        _SESSION_LIFE = 5 * 60
+    
     def __init__(self, factory):
         Service.__init__(self, factory)
-        
         self._lock = threading.RLock()
-        
         self._sessions = {}
+        self._cleaner = None
+    
+    def _initCleaner(self):
+        if self._cleaner is None:
+            self._cleaner = SessionsCleaner(keysMaker=lambda *args: self._sessions.keys(),
+                                            destroyer=self.destroy,
+                                            lockObject=self._lock,
+                                            timeLeft=lambda s: self.get(s).getParam('expiration') - time.time())
+            self._cleaner.daemon = True
+            self._cleaner.start()
+            myclips_server.logger.info("Sessions cleanup thread started with %d expiration time...", Sessions._SESSION_LIFE)
     
     def new(self):
         """
@@ -32,6 +47,9 @@ class Sessions(Service):
         @return: aSessionToken for the new session
         @rtype: string
         """
+        
+        self._initCleaner()
+        
         with self._lock:
             aSession = Session(self._generateToken())
             self._sessions[aSession.token] = aSession
@@ -49,7 +67,7 @@ class Sessions(Service):
         @rtype: boolean
         """
         try:
-            self.get(aSessionToken).setParam('expiration', int(time.time()) + 5 * 60 )
+            self.get(aSessionToken).setParam('expiration', int(time.time()) + Sessions._SESSION_LIFE )
             return True
         except:
             return False
@@ -67,9 +85,15 @@ class Sessions(Service):
             try:
                 for serviceName in self._factory.services():
                     try:
-                        self._factory.instance(serviceName).onSessionDestroy(aSessionToken)
-                    except:
+                        myclips_server.timeout_call(self._factory.instance(serviceName).onSessionDestroy, 2, args=(aSessionToken))
+                    except MyClipsServerException:
                         pass
+                    
+            except myclips_server.FunctionCallTimeout:
+                myclips_server.logger.warning("Session cleanup took more than 2 seconds...")
+                pass
+            
+            try:    
                 del self._sessions[aSessionToken]
                 return True
             except:
@@ -166,13 +190,74 @@ class InvalidSessionError(MyClipsServerFault):
     def __init__(self, message="", *args, **kwargs):
         MyClipsServerFault.__init__(self, message=message, code=1002, *args, **kwargs)
     
+class SessionsCleaner(threading.Thread):
+    
+    def __init__(self, keysMaker=lambda *args:[], 
+                        destroyer=lambda *args:None,
+                        lockObject=None,
+                        timeLeft=lambda s:0,
+                        group=None, target=None, name=None, args=(), kwargs=None, verbose=None
+                    ):
+        
+        self._keysMaker = keysMaker
+        self._destroyer = destroyer
+        self._lockObject = lockObject
+        self._timeLeft = timeLeft
+        self._nextLoop = Sessions._SESSION_LIFE + 10
+        threading.Thread.__init__(self, group=group, target=target, name=name, args=args, kwargs=kwargs, verbose=verbose)
+                
+    def run(self):
+        while True:
+            time.sleep(self._nextLoop)
+            
+            myclips_server.logger.info("Session cleanup")
+            
+            removed = 0
+            errors = 0
+            
+            with self._lockObject:
+                self._nextLoop = Sessions._SESSION_LIFE
+                
+                myclips_server.logger.debug("\tKeys: %s", repr(self._keysMaker()))
+                for aKey in self._keysMaker():
+                    try:
+                        timeLeft = self._timeLeft(aKey)
+                        myclips_server.logger.debug("\tKey: %s", aKey)
+                        myclips_server.logger.debug("\tTime-Left: %d", timeLeft)
+                        if timeLeft <= 0:
+                            # destroy the session
+                            self._destroyer(aKey)
+                            removed += 1
+                        else:
+                            if self._nextLoop > timeLeft:
+                                self._nextLoop = timeLeft
+                    except:
+                        # if error found, try to destroy
+                        errors += 1
+                        try:
+                            self._destroyer(aKey)
+                            removed += 1
+                        except:
+                            # destroyer failed
+                            # log this problem
+                            errors += 1
+                            myclips_server.logger.critical("A session can't be destroyed: %s", aKey)
+                            # this count as double problem!
+                            pass
+                        
+            # increment the next-loop-iteration delta by 10 seconds
+            self._nextLoop += 10
+            
+            myclips_server.logger.info("\t ... cleanup finished. %d destroyed. %d errors. Next iteration in: %d seconds", removed, errors, self._nextLoop)
+            
+        
         
 class Session(object):
     def __init__(self, aSessionToken):
         self._token = aSessionToken
         self._epoch = int(time.time())
         self._params = {"expiration" 
-                            : self._epoch + 5 * 60 # default expiration is epoch + 5 minutes
+                            : self._epoch + Sessions._SESSION_LIFE # default expiration is epoch + 5 minutes
                         }
         self._properties = {}
         
