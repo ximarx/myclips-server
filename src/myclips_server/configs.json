@@ -37,7 +37,7 @@
 	
 	"services": {
 		"Sessions_Sessions": {
-			"session-life" : 15
+			"session-life" : 300
 		}
 	}
 }
