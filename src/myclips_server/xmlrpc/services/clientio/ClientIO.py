@@ -7,6 +7,7 @@ from myclips_server.xmlrpc.services.Service import Service
 import xmlrpclib
 import myclips_server
 from myclips_server import FunctionCallTimeout
+from myclips_server.xmlrpc.services import sessions
 
 class ClientIO(Service):
     '''
@@ -67,6 +68,7 @@ class ClientIO(Service):
             pass
         theSessionsService.delProperty(aSessionToken, "ClientIO_ClientIO.streams")
         
+    @sessions.renewer
     def getStreamNames(self, aSessionToken):
         '''
         Get a list of all registered stream names for a session
@@ -78,6 +80,7 @@ class ClientIO(Service):
         theSessionsService = self._broker.Sessions
         return theSessionsService.getProperty(aSessionToken, "ClientIO_ClientIO.streams", {}).keys()
 
+    @sessions.renewer
     def register(self, aSessionToken, aStreamName, aStreamAddress, aReverseToken):
         '''
         Register a xmlrpc end-point of the client as a stream
@@ -122,6 +125,7 @@ class ClientIO(Service):
         else:
             theStreamsDict[aStreamName] = ClientIOStream( aReverseToken, theStream)
         
+    @sessions.renewer
     def unregister(self, aSessionToken, aStreamName):
         '''
         Remove a registered stream.
@@ -145,7 +149,8 @@ class ClientIO(Service):
         except:
             # ignore any error
             pass
-            
+
+    @sessions.renewer            
     def getStreamInfo(self, aSessionToken, aStreamName):
         '''
         Return the repr() string for the stream idenfitied by aStreamName
@@ -163,7 +168,6 @@ class ClientIO(Service):
         
         return repr(theSessionsService.getProperty(aSessionToken, "ClientIO_ClientIO.streams")[aStreamName])
             
-        
     def getStream(self, aSessionToken, aStreamName):
         '''
         Return a ClientIOStream instance for the aStreamName identifier
@@ -179,6 +183,7 @@ class ClientIO(Service):
         
         return theSessionsService.getProperty(aSessionToken, "ClientIO_ClientIO.streams")[aStreamName]
     
+    @sessions.renewer
     def printTo(self, aSessionToken, aStreamName, aMessage):
         '''
         Helper method to send a message to a stream

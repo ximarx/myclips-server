@@ -5,6 +5,8 @@ Created on 14/ago/2012
 '''
 from myclips_server.xmlrpc.services.Service import Service
 import importlib
+from myclips_server.xmlrpc.services import sessions
+
 
 class Services(Service):
     '''
@@ -13,7 +15,7 @@ class Services(Service):
 
     _NAME = "AdminServices_Services"
     _TYPE = "AdminServices"
-    __API__ = Service.__API__ + ["restart", "install", "replace", "remove", "refresh", "start"]
+    __API__ = Service.__API__ + ["restart", "install", "replace", "remove", "refresh", "start", "renew"]
     
     def start(self, aServiceName, asType=None):
         theService = self._factory.instance(aServiceName)
@@ -68,3 +70,7 @@ class Services(Service):
     def refresh(self, aModule):
         aModule = importlib.import_module(aModule)
         reload(aModule)
+        
+    @sessions.renewer
+    def renew(self, aSessionToken):
+        return True

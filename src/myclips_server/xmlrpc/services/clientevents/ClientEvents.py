@@ -7,6 +7,7 @@ from myclips_server.xmlrpc.services.Service import Service
 import xmlrpclib
 from myclips.listeners.EventsManagerListener import EventsManagerListener
 import myclips_server
+from myclips_server.xmlrpc.services import sessions
 
 class ClientEvents(Service):
     '''
@@ -55,6 +56,7 @@ class ClientEvents(Service):
         for aListenerName in someListeners.keys():
             self.unregister(aSessionToken, aListenerName)
         
+    @sessions.renewer
     def register(self, aSessionToken, aListenerName, aListenerAddress, aReverseToken, *eventsName):
         '''
         Register a xmlrpc end-point of the client as a myclips's event listener
@@ -108,7 +110,8 @@ class ClientEvents(Service):
                 
             someListeners[aListenerName] = theListener
             
-    
+            
+    @sessions.renewer
     def unregister(self, aSessionToken, aListenerName):
         '''
         Unregister a listener
@@ -142,14 +145,14 @@ class ClientListener(EventsManagerListener):
         EventsManagerListener.__init__(self, dict([ (aEvent, self.forward) for aEvent in (theEvents or []) ]))
         
     
-    def forward(self, eventName, *args, **kwargs):
+    def forward(self, *args, **kwargs):
         '''
         Forward a notify call to the client listener add the reverse token arg
         '''
-        args = [self._theOwner._broker.Registry.toSkeleton(x, True) for x in args]
+        args = [self._theReverseToken] + [self._theOwner._broker.Registry.toSkeleton(x, True) for x in args]
         kwargs = dict([(k, self._theOwner._broker.Registry.toSkeleton(x, True) ) for (k, x) in kwargs.items()])
         try:
-            myclips_server.timeout_call( self._theServer.notify, timeout=5, args=[eventName] + list(args), kwargs=kwargs)
+            myclips_server.timeout_call( self._theServer.notify, timeout=5, args=args, kwargs=kwargs)
         except myclips_server.FunctionCallTimeout:
             myclips_server.logger.info("...a listener forwarding took more than 5 second. Aborted")
         except:

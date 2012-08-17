@@ -144,7 +144,6 @@ class Sessions(Service):
         """
         return self.get(aSessionToken).delProperty(aProperty)
     
-    
     def isValid(self, aSessionToken):
         """
         Return True if aSessionToken is a valid token for
@@ -184,7 +183,6 @@ class Sessions(Service):
         while aToken is None or self._sessions.has_key(aToken):
             aToken = str(uuid.uuid4())
         return aToken
-        
     
 class InvalidSessionError(MyClipsServerFault):
     def __init__(self, message="", *args, **kwargs):

@@ -5,6 +5,7 @@ Created on 14/ago/2012
 '''
 from myclips_server.xmlrpc.services.Service import Service
 from myclips.shell.Interpreter import Interpreter
+from myclips_server.xmlrpc.services import sessions
 
 class RemoteShell(Service):
     '''
@@ -39,7 +40,7 @@ class RemoteShell(Service):
             
         return theShell
         
-        
+    @sessions.renewer
     def do(self, aSessionToken, aCommand):
         '''
         Execute a command and return the results
@@ -60,5 +61,17 @@ class RemoteShell(Service):
         
         return theRegistryService.toSkeleton(theShell.evaluate(aCommand))
         
+    @sessions.renewer
+    def destroy(self, aSessionToken):
+        '''
+        Destroy a shell (if any)
         
-    
+        @param aSessionToken: a token for a valid session
+        @type aSessionToken: string
+        '''
+        
+        try:
+            theSessionsService = self._broker.Sessions
+            theSessionsService.delProperty(aSessionToken, 'RemoteShell_MyClipsShell.shell')
+        finally:
+            return True

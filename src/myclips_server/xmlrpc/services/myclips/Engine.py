@@ -7,6 +7,7 @@ from myclips_server.xmlrpc.services.Service import Service
 from myclips.rete.Network import Network
 from myclips_server import MyClipsServerException, InvalidArgTypeError
 import myclips_server.xmlrpc.services.types.skeletons as skeletons
+from myclips_server.xmlrpc.services import sessions
 
 class Engine(Service):
     '''
@@ -133,6 +134,7 @@ class Engine(Service):
         'myclips.Fact.Fact' : 'assertFact'
     }
     
+    @sessions.renewer
     def addConstruct(self, aSessionToken, aConstructSkeleton):
         '''
         Add a generic construct skeleton in the engine.
@@ -159,7 +161,7 @@ class Engine(Service):
             
         raise MyClipsServerException("Invalid <aConstructSkeleton> type")
         
-        
+    @sessions.renewer
     def addDefRule(self, aSessionToken, aRuleSkeleton):
         '''
         Add a defrule construct to a network
@@ -186,7 +188,7 @@ class Engine(Service):
             raise InvalidArgTypeError("addDefRule", 2, skeletons.DefRuleConstruct.sign(), repr(aRuleSkeleton))
             
         
-    
+    @sessions.renewer
     def addDefModule(self, aSessionToken, aModuleSkeleton):
         '''
         Add a defmodule construct to a network
@@ -212,7 +214,7 @@ class Engine(Service):
         else:
             raise InvalidArgTypeError("addDefModule", 2, skeletons.DefModuleConstruct.sign(), repr(aModuleSkeleton))
 
-    
+    @sessions.renewer
     def addDefFacts(self, aSessionToken, aDeffactsSkeleton):
         '''
         Add a deffact to the network
@@ -238,7 +240,7 @@ class Engine(Service):
         else:
             raise InvalidArgTypeError("addDefFacts", 2, skeletons.DefFactsConstruct.sign(), repr(aDeffactsSkeleton))
 
-    
+    @sessions.renewer
     def addDefGlobal(self, aSessionToken, aDefglobalSkeleton):
         '''
         Add a defglobal to the network
@@ -265,7 +267,7 @@ class Engine(Service):
         else:
             raise InvalidArgTypeError("addDefGlobal", 2, skeletons.DefGlobalConstruct.sign(), repr(aDefglobalSkeleton))
 
-    
+    @sessions.renewer
     def addDefTemplate(self, aSessionToken, aDefTemplateSkeleton):
         '''
         Add a deftemplate to the network
@@ -291,6 +293,7 @@ class Engine(Service):
         else:
             raise InvalidArgTypeError("addDefTemplate", 2, skeletons.DefTemplateConstruct.sign(), repr(aDefTemplateSkeleton))
 
+    @sessions.renewer
     def addDefFunction(self, aSessionToken, aDefFunctionSkeleton):
         '''
         Add a deffunction to the network
@@ -316,7 +319,7 @@ class Engine(Service):
         else:
             raise InvalidArgTypeError("addDefFunction", 2, skeletons.DefFunctionConstruct.sign(), repr(aDefFunctionSkeleton))
 
-    
+    @sessions.renewer
     def assertFact(self, aSessionToken, aFactSkeleton):
         '''
         Assert a new fact
@@ -345,6 +348,7 @@ class Engine(Service):
         else:
             raise InvalidArgTypeError("assertFact", 2, skeletons.Fact.sign(), repr(aFactSkeleton))
     
+    @sessions.renewer
     def retractFact(self, aSessionToken, aFactSkeleton):
         '''
         Retract a fact from the network. This function required a fact
@@ -374,6 +378,7 @@ class Engine(Service):
             raise InvalidArgTypeError("retractFact", 2, skeletons.Fact.sign(), repr(aFactSkeleton))
 
 
+    @sessions.renewer
     def retractFactId(self, aSessionToken, aFactId):
         '''
         Retract a fact from the network. This function required a fact-id
@@ -398,7 +403,7 @@ class Engine(Service):
         else:
             raise InvalidArgTypeError("retractFactId", 2, '<int>', repr(aFactId))
 
-    
+    @sessions.renewer
     def getWme(self, aSessionToken, aFactId):
         '''
         Return a <Skeleton: myclips.rete.WME.WME> for a fact with id aFactId
@@ -422,6 +427,7 @@ class Engine(Service):
         else:
             raise InvalidArgTypeError("getWme", 2, '<int>', repr(aFactId))
     
+    @sessions.renewer
     def getWmes(self, aSessionToken, moduleName=None):
         '''
         Return a list of <Skeleton: myclips.rete.WME.WME>
@@ -455,7 +461,7 @@ class Engine(Service):
         else:
             raise InvalidArgTypeError("getWmes", 2, '<string> or <None>', repr(moduleName))
 
-    
+    @sessions.renewer
     def clear(self, aSessionToken):
         '''
         Clear the network
@@ -466,6 +472,7 @@ class Engine(Service):
         theNetwork = self.getNetwork(aSessionToken)
         return theNetwork.clear()
         
+    @sessions.renewer
     def reset(self, aSessionToken):
         '''
         Reset the network
@@ -476,6 +483,7 @@ class Engine(Service):
         theNetwork = self.getNetwork(aSessionToken)
         return theNetwork.reset()
     
+    @sessions.renewer
     def run(self, aSessionToken, steps=None):
         '''
         Execute all or a number of activations available in the network
