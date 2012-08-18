@@ -126,6 +126,7 @@ def timeout_call(func, timeout=10, args=(), kwargs={}, forward_exc=False):
                     pass
             
     it = InterruptableThread()
+    it.daemon = True
     it.start()
     it.join(timeout)
     if it.isAlive():

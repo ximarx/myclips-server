@@ -413,7 +413,6 @@ class DefModuleConstruct(Skeleton):
     __PROPERTIES__ = {
         "moduleName" : None,
 		"comment" : None,
-		"comment" : None,
 		"specifications" : None
     }
 
