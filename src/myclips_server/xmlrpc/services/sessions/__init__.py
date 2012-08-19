@@ -8,10 +8,10 @@ def renewer(theFunction):
     """
     
     @wraps(theFunction)
-    def decorator(*args, **kwargs):
+    def wrapper(*args, **kwargs):
         args[0]._broker.Sessions.renew(args[1])
         theReturn = theFunction(*args, **kwargs)
         args[0]._broker.Sessions.renew(args[1])
         return theReturn
         
-    return decorator
+    return wrapper

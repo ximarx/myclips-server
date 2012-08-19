@@ -16,14 +16,14 @@ class ClientEvents(Service):
     The client must implement a xmlrpc end-point with at-least the following
     methods:
     
-        - .ping(string aReverseToken) : True
+        - Listener.ping(string aReverseToken) : True
             Called to check server-client connection and validate the reverse token
             and the listener
             
-        - .notify(string aReverseToken, string anEventName, *args, **kwargs) : None
+        - Listener.notify(string aReverseToken, string anEventName, *args, **kwargs) : None
             Called when events are fired.
             
-        - .close(string aReverseToken) : None
+        - Listener.close(string aReverseToken) : None
             Called before the unregister process is completed to nofity
             the client's listener
     
@@ -103,7 +103,12 @@ class ClientEvents(Service):
         except myclips_server.FunctionCallTimeout:
             myclips_server.logger.info("...a ClientListener ping check took more than 2 seconds. Ignored!")
         else:
-            theListener = ClientListener(aReverseToken, theListener, self, list(eventsName))
+            # if the events[0] is a list, then the client failed to expand the list of 
+            # events (just like myclips-javalib)
+            if len(eventsName) and isinstance( eventsName[0], list ):
+                eventsName = eventsName[0] + list(eventsName)[1:]
+            
+            theListener = ClientListener(aReverseToken, theListener, self, eventsName)
             
             theNetwork = self._broker.Engine.getNetwork(aSessionToken)
             theListener.install(theNetwork.eventsManager)
@@ -152,7 +157,7 @@ class ClientListener(EventsManagerListener):
         args = [self._theReverseToken] + [self._theOwner._broker.Registry.toSkeleton(x, True) for x in args]
         kwargs = dict([(k, self._theOwner._broker.Registry.toSkeleton(x, True) ) for (k, x) in kwargs.items()])
         try:
-            myclips_server.timeout_call( self._theServer.notify, timeout=5, args=args, kwargs=kwargs)
+            myclips_server.timeout_call( self._theServer.Listener.notify, timeout=5, args=args, kwargs=kwargs)
         except myclips_server.FunctionCallTimeout:
             myclips_server.logger.info("...a listener forwarding took more than 5 second. Aborted")
         except:
@@ -163,7 +168,7 @@ class ClientListener(EventsManagerListener):
         Notify client listener about link shotdown
         '''
         try:
-            self._theServer.close(self._theReverseToken)
+            self._theServer.Listener.close(self._theReverseToken)
         except:
             myclips_server.logger.info("A listener could be not valid anymore: %s", self)
     

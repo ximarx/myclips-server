@@ -8,6 +8,7 @@ from myclips.rete.Network import Network
 from myclips_server import MyClipsServerException, InvalidArgTypeError
 import myclips_server.xmlrpc.services.types.skeletons as skeletons
 from myclips_server.xmlrpc.services import sessions
+import myclips_server
 
 class Engine(Service):
     '''
@@ -117,6 +118,8 @@ class Engine(Service):
 
             #---- Create the instance of Network for the client ----#
             #---- and store it in the session ----------------------#
+            
+            myclips_server.logger.debug("New Engine:\n\tSession: %s\n\tResources: %s", aSessionToken, resources)
             
             # use the map of resources in the Network initialization
             theNetwork = Network(resources=resources)

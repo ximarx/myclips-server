@@ -19,25 +19,25 @@ class ClientIO(Service):
     The client must implement a xmlrpc end-point with at-least the following
     methods:
     
-        - .ping(string aReverseToken) : True
+        - Stream.ping(string aReverseToken) : True
             Used by the server to check if stream is valid
             
-        - .write(string aReverseToken, string theString) : None
+        - Stream.write(string aReverseToken, string theString) : None
             Used by the server to send data (in string format)
             
-        - .writelines(string aReverseToken, list someStrings) : None
+        - Stream.writelines(string aReverseToken, list someStrings) : None
             Used by the server to send a list of string
             
-        - .close(string aReverseToken) : None
+        - Stream.close(string aReverseToken) : None
             Used by the server to notify the client about stream unregistering
             
-        - .seek(string aReverseToken, int aPosition, int aMode) : Boolean
+        - Stream.seek(string aReverseToken, int aPosition, int aMode) : Boolean
             Used by the server to move the stream cursor position in the stream
             
-        - .readline(string aReverseToken) : String
+        - Stream.readline(string aReverseToken) : String
             Used by the server to read a line from the client stream
             
-        - .__call(string aReverseToken, string aMissingMethodName, *args, **kwargs) : mixed
+        - Stream.__call(string aReverseToken, string aMissingMethodName, *args, **kwargs) : mixed
             This method will be called if a required method is missing. 
             If this method is missing too, an XMLRPC Fault will be raised.
             
@@ -209,9 +209,9 @@ class ClientIOStream(object):
         def __forward_call(*args, **kwargs):
             try:
                 #return getattr(self._theServer, name)(self._theReverseToken, *args, **kwargs)
-                return myclips_server.timeout_call( getattr(self._theServer, name), timeout=60, args=[self._theReverseToken] + list(args), kwargs=kwargs) 
+                return myclips_server.timeout_call( getattr(self._theServer.Stream, name), timeout=60, args=[self._theReverseToken] + list(args), kwargs=kwargs) 
             except xmlrpclib.Fault:
-                return self._theServer.__call(self._theReverseToken, name, *args, **kwargs)
+                return self._theServer.Stream.__call(self._theReverseToken, name, *args, **kwargs)
             except FunctionCallTimeout:
                 myclips_server.logger.warning("...a ClientIOStream request took more than 60 seconds. Aborted")
                 raise IOError()

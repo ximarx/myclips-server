@@ -12,11 +12,12 @@ def aStream():
     iFile = sys.stdin
     
     fakeStdOut = SimpleXMLRPCServer(("localhost", 0), allow_none=True, logRequests=False)    
-    fakeStdOut.register_function(lambda t: "pong", 'ping')    
-    fakeStdOut.register_function(lambda t,s: oFile.write("RPC: "+s+"\n") or True, 'write')
-    fakeStdOut.register_function(lambda *args: oFile.write("RPC: CLOSE!") or True, 'close')
-    fakeStdOut.register_function(lambda t: oFile.write("RPC Input: ") or iFile.readline(), 'readline')
-    fakeStdOut.register_function(lambda t,en,*args: oFile.write("RPC Notify: [%s] %s\n"%(en, repr(args))) or True, 'notify')
+    fakeStdOut.register_function(lambda t: "pong", 'Stream.ping')
+    fakeStdOut.register_function(lambda t: "pong", 'Listener.ping')    
+    fakeStdOut.register_function(lambda t,s: oFile.write("RPC: "+s+"\n") or True, 'Stream.write')
+    fakeStdOut.register_function(lambda *args: oFile.write("RPC: CLOSE!") or True, 'Stream.close')
+    fakeStdOut.register_function(lambda t: oFile.write("RPC Input: ") or iFile.readline(), 'Stream.readline')
+    fakeStdOut.register_function(lambda t,en,*args: oFile.write("RPC Notify: [%s] %s\n"%(en, repr(args))) or True, 'Listener.notify')
     
     thread.start_new_thread(fakeStdOut.serve_forever, ())
     
@@ -25,14 +26,14 @@ def aStream():
 
 
 def gs():
-    return xmlrpclib.Server('http://localhost:8081', allow_none=True, verbose=False)
+    return xmlrpclib.Server('http://localhost:8082', allow_none=True, verbose=False)
 
 
 pp = pprint.pprint
 
 s = gs()
 
-aToken = s.Sessions.new()
+#aToken = s.Sessions.new()
 
 def linkStream():
     
