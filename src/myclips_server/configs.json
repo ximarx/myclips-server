@@ -30,7 +30,8 @@
 			],
 			"remove": [
 				"open",
-				"close"
+				"close",
+				"watch"
 			]
 		}
 	},
