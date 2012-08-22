@@ -31,7 +31,9 @@
 			"remove": [
 				"open",
 				"close",
-				"watch"
+				"watch",
+				"unwatch",
+				"exit"
 			]
 		}
 	},

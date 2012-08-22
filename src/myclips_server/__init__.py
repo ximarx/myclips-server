@@ -44,9 +44,6 @@ except:
     
 
 MYCLIPS_LIB_SRC_PATH = CONFIGURATIONS.get('myclips', {}).get('search-paths', [])
-MYCLIPS_FUNCTIONS_REPLACEMENTS = CONFIGURATIONS.get('myclips', {}).get('system-functions', {}).get('replace', [])
-MYCLIPS_FUNCTIONS_REMOVALS = CONFIGURATIONS.get('myclips', {}).get('system-functions', {}).get('remove', [])
-MYCLIPS_FUNCTIONS_REGISTRATIONS = CONFIGURATIONS.get('myclips', {}).get('system-functions', {}).get('register', [])
 
 FORMAT = '[%(levelname).3s %(module)s::%(funcName)s:%(lineno)d] %(message)s'
 _logging.basicConfig(format=FORMAT)
@@ -135,95 +132,6 @@ def timeout_call(func, timeout=10, args=(), kwargs={}, forward_exc=False):
         return it.result
 
 
-def __replaceFuncs(_F_REPLACEMENTS):
-
-    # replace some system function definition with a server-proof version:
-    
-    if len(_F_REPLACEMENTS):
-    
-        import myclips.functions as _mycfuncs
-        
-        # manually bootstrap system functions
-        _mycfuncs.SystemFunctionBroker.bootstrap()
-        
-        for _funcInfo in _F_REPLACEMENTS:
-    
-            logger.info("Replacing: %s", str(_funcInfo))    
-    
-            _moduleName = "<none>"
-            _className = "<none>"    
-    
-            try:
-                # prepare the replacement
-                
-                _moduleName = _funcInfo['module']
-                _className = _funcInfo['class']
-                _funcInstance = myclips.newInstance(_className, None, _moduleName)
-                _mycfuncs.SystemFunctionBroker.register(_funcInstance, True)
-            except:
-                logger.critical("Error replacing %s.%s\n%s---------------\n", _moduleName, _className, traceback.format_exc() )
-            else:
-                # then replace the definition
-                logger.info("\t\t...Done")
-
-
-def __registerFuncs(_F_REGISTERS):
-
-    # replace some system function definition with a server-proof version:
-    
-    if len(_F_REGISTERS):
-    
-        import myclips.functions as _mycfuncs
-        
-        # manually bootstrap system functions
-        _mycfuncs.SystemFunctionBroker.bootstrap()
-        
-        for _funcInfo in _F_REGISTERS:
-    
-            logger.info("Registering: %s", str(_funcInfo))
-            
-            _moduleName = "<none>"
-            _className = "<none>"    
-    
-            try:
-                # prepare the replacement
-                
-                _moduleName = _funcInfo['module']
-                _className = _funcInfo['class']
-                _funcInstance = myclips.newInstance(_className, None, _moduleName)
-                _mycfuncs.SystemFunctionBroker.register(_funcInstance, False)
-            except:
-                logger.critical("Error registering %s.%s\n%s---------------\n", _moduleName, _className, traceback.format_exc() )
-            else:
-                # then replace the definition
-                logger.info("\t\t...Done")
-
-
-def __removeFuncs(_F_REMOVES):
-
-    # replace some system function definition with a server-proof version:
-    
-    if len(_F_REMOVES):
-    
-        import myclips.functions as _mycfuncs
-        
-        # manually bootstrap system functions
-        _mycfuncs.SystemFunctionBroker.bootstrap()
-        
-        for _funcInfo in _F_REMOVES:
-    
-            logger.info("Removing: %s", str(_funcInfo))
-            try:
-                _mycfuncs.SystemFunctionBroker.unregister(_funcInfo)
-            except:
-                logger.critical("Error removing %s\n%s--------------\n", _funcInfo, traceback.format_exc() )
-            else:
-                logger.info("\t\t...Done")
-
-
-__removeFuncs(MYCLIPS_FUNCTIONS_REMOVALS)
-__registerFuncs(MYCLIPS_FUNCTIONS_REGISTRATIONS)
-__replaceFuncs(MYCLIPS_FUNCTIONS_REPLACEMENTS) 
 
 
 
