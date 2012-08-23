@@ -33,7 +33,8 @@
 				"close",
 				"watch",
 				"unwatch",
-				"exit"
+				"exit",
+				"load"
 			]
 		}
 	},
