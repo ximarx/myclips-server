@@ -26,14 +26,14 @@ def aStream():
 
 
 def gs():
-    return xmlrpclib.Server('http://localhost:8082', allow_none=True, verbose=False)
+    return xmlrpclib.Server('http://localhost:8081', allow_none=True, verbose=False)
 
 
 pp = pprint.pprint
 
 s = gs()
 
-#aToken = s.Sessions.new()
+aToken = s.Sessions.new()
 
 def linkStream():
     
@@ -50,10 +50,9 @@ def linkListener():
     s.ClientEvents.register(aToken, "aListener%s"%aAddress, aAddress, 213, 'fact-retracted', 'fact-asserted', 'node-added' )
     
 def tryDraw():
-    linkStream()
     
     s.RemoteShell.do(aToken, '(defrule r (A B C) =>)')
-    s.RemoteShell.do(aToken, '(draw-circuit nil r)')
+    s.RemoteShell.do(aToken, '(draw-circuit wtrace r)')
     
 def tryAddRule():
     return s.Engine.addDefRule(aToken, 
@@ -85,5 +84,13 @@ print "    pp(s.apis(SERVICENAME))"
 print "        : get the list of apis in the service"
 print "    linkStream()"
 print "        : redirect server output streams here!"
+print "    linkListener()"
+print "        : redirect events here!"
+print "    tryAddRule()"
+print "        : add a new rule"
+print "    tryDraw()"
+print "        : draw a rule"
+print "    tryAssertTemplate()"
+print "        : add a deftemplate + assert a new template-fact"
 print
 
