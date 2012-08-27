@@ -20,7 +20,7 @@ class ClientEvents(Service):
             Called to check server-client connection and validate the reverse token
             and the listener
             
-        - Listener.notify(string aReverseToken, string anEventName, *args, **kwargs) : None
+        - Listener.notify(string aReverseToken, string anEventName, list args) : None
             Called when events are fired.
             
         - Listener.close(string aReverseToken) : None
@@ -154,10 +154,9 @@ class ClientListener(EventsManagerListener):
         '''
         Forward a notify call to the client listener add the reverse token arg
         '''
-        args = [self._theReverseToken] + [self._theOwner._broker.Registry.toSkeleton(x, True) for x in args]
-        kwargs = dict([(k, self._theOwner._broker.Registry.toSkeleton(x, True) ) for (k, x) in kwargs.items()])
+        args = [self._theReverseToken] + [args[0]] + [[self._theOwner._broker.Registry.toSkeleton(x, True) for x in args[1:]]]
         try:
-            myclips_server.timeout_call( self._theServer.Listener.notify, timeout=5, args=args, kwargs=kwargs)
+            myclips_server.timeout_call( self._theServer.Listener.notify, timeout=5, args=args)
         except myclips_server.FunctionCallTimeout:
             myclips_server.logger.info("...a listener forwarding took more than 5 second. Aborted")
         except:
