@@ -1,6 +1,6 @@
 {
 	"myclips_server": {
-		"bind-address": "localhost",
+		"bind-address": "0.0.0.0",
 		"bind-port": 8081,
 		"log-requests": true,
 		"log-level": 10,
@@ -16,7 +16,7 @@
 	},
 	
 	"myclips": {
-		"log-level": 10,
+		"log-level": 20,
 		"search-paths": [
 			"../../myclips", "../../../myclips", "../myclips", "../lib/myclips",
 			"../../myclips/src/", "../../../myclips/src/", "../myclips/src", "../lib/myclips/src"
@@ -26,8 +26,10 @@
 		        "module": "myclips_server.server_functions.DrawCircuit",
 		        "class": "DrawCircuit"
 		    }],
-			"register": [
-			],
+			"register": [{
+		        "module": "myclips_server.server_functions.ServerLoad",
+		        "class": "ServerLoad"
+		    }],
 			"remove": [
 				"open",
 				"close",
@@ -41,7 +43,7 @@
 	
 	"services": {
 		"Sessions_Sessions": {
-			"session-life" : 300
+			"session-life" : 10300
 		}
 	}
 }
