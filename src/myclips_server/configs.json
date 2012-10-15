@@ -1,7 +1,7 @@
 {
 	"myclips_server": {
 		"bind-address": "0.0.0.0",
-		"bind-port": 8081,
+		"bind-port": 8082,
 		"log-requests": true,
 		"log-level": 10,
 		"services": {
@@ -10,8 +10,7 @@
 			"ClientIO":			"ClientIO_ClientIO",
 			"Engine": 			"Engine_MyClips",
 			"RemoteShell": 		"RemoteShell_MyClipsShell",
-			"ClientEvents":		"ClientEvents_MyClipsEvents",
-			"AdminServices": 	"AdminServices_Services"
+			"ClientEvents":		"ClientEvents_MyClipsEvents"
 		}
 	},
 	
@@ -25,6 +24,9 @@
 			"replace": [{
 		        "module": "myclips_server.server_functions.DrawCircuit",
 		        "class": "DrawCircuit"
+		    },{
+		        "module": "myclips_server.server_functions.Load",
+		        "class": "Load"
 		    }],
 			"register": [{
 		        "module": "myclips_server.server_functions.ServerLoad",
@@ -35,8 +37,7 @@
 				"close",
 				"watch",
 				"unwatch",
-				"exit",
-				"load"
+				"exit"
 			]
 		}
 	},
